@@ -19,19 +19,29 @@ needs to know what exists by name before it can avoid duplicating it.
 Without this split, every round redesigns the product from scratch and the
 `.pen` file becomes a patchwork of three different design systems.
 
+**Discovery is a third, separate condition.** `/prototypen:discover` is an
+optional interactive step that runs *before* the pipeline and produces
+`design/product-spec.md`. It is not a phase and not a gate — it is an alternative
+source for phase 1's output. When it has run, phase 1 is skipped; when it has
+not, phase 1 writes the spec itself.
+
 **The brand condition is separate and independent of the mode.** Phase 3 runs
 when there is no `design/brand.md` *and* the user supplied no brand — including
 in a project that already has research, direction, and screens. If a brand
 exists in either form, it is loaded as a constraint and the phase is skipped.
 
-## Phase 1 — Intake
+## Phase 1 — Intake *(skipped when discovery has run)*
 
 | | |
 |---|---|
-| **In** | The user's request |
+| **In** | The user's request, or `design/product-spec.md` if it already exists |
 | **Out** | `design/product-spec.md` |
-| **By** | The skill |
+| **By** | The skill, or `/prototypen:discover` beforehand |
 | **Template** | `product-spec.template.md` |
+
+**If `design/product-spec.md` exists, this phase is skipped.** The `discover`
+skill produces that file interactively, and redoing the intake would discard
+answers a human actually gave.
 
 Personas, jobs, core loop, screen inventory, and — the part that matters most —
 the **state inventory**: for every screen, which of empty / loading / error /
@@ -40,7 +50,11 @@ shows. Phase 8's completeness level checks against this table. A state missing
 here is a state nobody will notice is missing from the canvas.
 
 Anything the request left silent is decided, not asked, and recorded under
-Assumptions.
+Assumptions — with one exception, and it is a mention rather than a question. If
+the request is thin enough that assumptions would outnumber facts, the skill says
+in one line that `/prototypen:discover` would collect that first, then **proceeds
+anyway** under its own assumptions. It never waits for an answer; that would be
+an approval gate in a pipeline built not to have any.
 
 ## Phase 2 — Research *(skipped in incremental mode)*
 
@@ -226,12 +240,18 @@ afterward, and the cost of unwinding it grows with each subsequent phase.
 ## Flow
 
 ```
+     /prototypen:discover  (optional, interactive)
+                       │
+                       ▼
+             design/product-spec.md
+                       │
                  mode detection
                        │
         ┌──────────────┴──────────────┐
    bootstrap                    incremental
         │                             │
-   1 Intake                    load brand + direction
+   1 Intake  (skipped if              │
+      the spec exists)         load brand + direction
         │                       + spec + tokens
    2 Research                          │
         │                              │

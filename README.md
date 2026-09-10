@@ -48,17 +48,42 @@ claude --plugin-dir /home/leandro/projects/personal/prototypen-plugin
 The project needs to be a git repository — the pipeline commits after each
 phase, and that is what makes step 5 possible.
 
+Two skills become available, both invocable by name or triggered from a plain
+request: **`/prototypen:discover`** (interactive, collects requirements) and
+**`/prototypen:prototype`** (the unattended pipeline).
+
 ### 2. Describe what you want built
 
-You do not need to say "prototype", or name the skill:
+Two entry points, depending on how settled the idea is.
+
+**If you can state the product in a paragraph**, just say it — you do not need
+to name the skill or say "prototype":
 
 > Design an app for a small logistics company to track shipments: a list of
 > active shipments with status, carrier, cost and ETA, a detail view per
 > shipment, and a weekly cost report. Three dispatchers use it all day on
 > desktop.
 
-Include who uses it, in what context, and how often — the direction phase chooses
-between density and airiness on exactly that, and without it the choice defaults.
+Include **who uses it, in what context, and how often**. The direction phase
+chooses between dense and airy on exactly that, and without it the choice
+defaults.
+
+**If the idea is still loose** — the requirements are in your head rather than in
+a paragraph — run discovery first:
+
+```
+/prototypen:discover
+```
+
+It asks the questions worth asking, in at most three rounds, and writes
+`design/product-spec.md`. Then `/prototypen:prototype` picks that file up and
+skips its own intake. This is the only interactive step in the plugin; it is
+optional, and it is where a human's knowledge of the domain actually gets in.
+
+One thing it deliberately never asks is what you want it to look like — asked
+directly, that question produces "clean, modern, professional", which is the
+generic default this plugin exists to escape. The visual decisions are made
+later, against evidence.
 
 Write in whatever language you want to work in. The plugin's own files are
 English; everything it *produces* — documents, audit reports, and the copy inside

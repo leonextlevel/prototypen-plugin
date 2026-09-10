@@ -84,15 +84,27 @@ unattended run; the audit phases are the quality control, not the user.
 
 ### 1 — Intake
 
-Read the request. Write `design/product-spec.md` from
-`templates/product-spec.template.md`: personas, the jobs each one hires the
-product for, the screen inventory, and **every state per screen** (empty,
-loading, error, first run, long list, long text, permission denied). The state
-inventory here is what the completeness audit in phase 8 checks against — if a
-state is missing from the spec, nobody will notice it is missing from the canvas.
+**If `design/product-spec.md` already exists, read it and skip to phase 2.**
+`/prototypen:discover` produces that file interactively; when it has run, the
+intake is done and redoing it would discard answers a human actually gave.
+
+Otherwise, write it yourself from `templates/product-spec.template.md`: personas,
+the jobs each one hires the product for, the core loop, the screen inventory, and
+**every state per screen** (empty, loading, error, first run, long list, long
+text, permission denied). The state inventory here is what the completeness audit
+in phase 8 checks against — if a state is missing from the spec, nobody will
+notice it is missing from the canvas.
 
 Ask nothing you can decide. Where the request is silent, decide, and record the
-assumption in a "Assumptions" section of the spec.
+assumption in an "Assumptions" section of the spec.
+
+One exception to the no-questions rule, and it is a mention rather than a
+question: if the request is thin enough that the assumptions would outnumber the
+facts — no stated users, no context of use, no frequency — say in **one line**
+that `/prototypen:discover` would collect that first, and then **proceed anyway**
+under your own assumptions. Never wait for an answer. This is a long unattended
+run; a spec built on recorded guesses is worth more than a pipeline stopped at
+phase 1.
 
 ### 2 — Research
 

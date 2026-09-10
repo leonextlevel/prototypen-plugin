@@ -16,13 +16,35 @@ sentences.
 ## The pieces
 
 ```
+skills/discover/SKILL.md         optional interactive intake — the only step that asks
 skills/prototype/SKILL.md        the process — what happens, in what order, and when to stop
   └── references/*.md            the detail — loaded per phase, not up front
 agents/*.md                      four executors, each in its own context
 templates/*.md                   the shape of every artifact the pipeline writes
 ```
 
-### The skill
+### Two skills, split on whether asking is allowed
+
+`discover` and `prototype` are separated along a real seam: **whether a question
+is worth its cost.**
+
+In `discover`, nothing has been generated yet. A question costs one exchange and
+can redirect an entire run, so asking is the highest-leverage thing available.
+In `prototype`, generation is underway and the target is a long unattended run;
+a question costs the run its autonomy, so the rule inverts to decide-and-record.
+
+Putting both behaviors in one skill would mean a single body carrying two
+contradictory instructions about questions, with the model choosing which to
+follow. Splitting them makes each one unambiguous, and makes the interactive part
+**optional** — `prototype` writes its own spec when `discover` has not run, so
+the pipeline keeps its unattended property either way. `discover` is not a gate;
+it is an alternative source for one artifact.
+
+They are skills rather than `commands/` because plugin skills are already
+invocable as `/prototypen:discover` and `/prototypen:prototype`, so the command
+ergonomics come free without the legacy format. See `decisions.md`.
+
+### The prototype skill
 
 `skills/prototype/SKILL.md` is the orchestrator. It holds mode detection, the
 phase sequence, the delegation map, the commit rule, the attempt limit, and the

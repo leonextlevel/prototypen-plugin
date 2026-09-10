@@ -225,3 +225,49 @@ any component, no `../`, no symlinks, and no `hooks`/`mcpServers`/
 a real semver version becomes meaningful and rule 5 no longer applies. Until
 then, run `claude plugin validate .` without `--strict` and confirm the version
 warning is the sole entry.
+
+---
+
+## 2026-09-09 — Two invocable skills, not a `commands/` directory
+
+**Decided:** discovery and the pipeline are two skills — `/prototypen:discover`
+and `/prototypen:prototype` — and `commands/` still does not exist.
+
+**Why:** the request was for two commands: one to explore an idea and collect
+requirements, one to run the whole design. The ergonomics are right, but they do
+not require the legacy format. **Plugin skills are already invocable as
+`/<plugin>:<skill>`**, so a skill gives the typed-command entry point *and*
+autotriggering from a plain request, while `commands/` would give only the first
+and reintroduce a format that is on its way out.
+
+So the build rule "no `commands/`" survives intact, and the user-facing behavior
+they asked for exists anyway.
+
+**Why two skills rather than one skill with two modes:** the split falls on a
+real seam — **whether asking a question is worth its cost.** Before generation, a
+question costs one exchange and can redirect a whole run; asking is the
+highest-leverage move available. During generation, the target is a long
+unattended run and a question costs the run its autonomy, so the rule inverts to
+decide-and-record. One skill carrying both instructions would be one body with
+two contradictory rules about questions, and the model would pick.
+
+**How the no-gates rule survives:** `discover` is not a phase and not a gate. It
+is an alternative source for phase 1's output. `prototype` skips phase 1 when
+`design/product-spec.md` exists and writes it itself when it does not, so the
+pipeline stays runnable end to end without ever stopping for input. The one
+concession is that phase 1 may *mention* discovery in a single line when a
+request is unusually thin — and then proceeds anyway, without waiting.
+
+**Discovery must not ask about aesthetics.** This is written into the skill as a
+hard prohibition rather than a preference. Asked what they want it to look like,
+almost everyone answers "clean, modern, professional" — a verbatim description of
+the generic default this plugin exists to escape. The question has no good answer
+in the abstract, so it collects noise while feeling productive, and worse, it
+gives the pipeline a fake constraint that outranks the real ones. Discovery
+collects the *job*; the visual decisions are made in research and direction,
+against evidence. Existing brands and mandated design systems are facts, not
+preferences, and those are asked about explicitly.
+
+**Would change if:** discovery grows past collecting requirements — if it starts
+doing competitive scanning or sketching, it is duplicating phases 2 and 4 and
+should be folded back rather than expanded.

@@ -44,6 +44,12 @@ is true:
    as sharp as the constraint it checks. Fix what
    `references/design-direction.md` *requires* a direction to declare.
 
+The same reasoning governs adding a **skill**. There are two, and they are split
+on whether asking the user a question is allowed — before generation it is the
+highest-leverage move, during generation it costs the run its autonomy. A third
+skill needs a seam that real. A new *phase* of the pipeline is not one; that goes
+in `prototype`'s body or a reference file.
+
 Another agent adds a context, a handoff, and a place for instructions to
 contradict each other. It does not add judgment. Four agents cover the four
 genuinely different jobs — find out what is true, decide what the brand is,
@@ -115,7 +121,10 @@ Changes to `agents/*.md`, `plugin.json`, or `.mcp.json` are cached. Run
 
 ## What not to add
 
-- **`commands/`** — legacy format. New capability goes in `skills/`.
+- **`commands/`** — legacy format, and unnecessary: plugin skills are already
+  invocable as `/prototypen:discover` and `/prototypen:prototype`, so a skill
+  gives both the typed entry point and autotriggering. New capability goes in
+  `skills/`.
 - **Approval gates in the pipeline** — the target is a long unattended run. The
   audit phases are the quality control, not the user's attention.
 - **`CLAUDE.md` at the plugin root** — it is not loaded as project context.

@@ -13,7 +13,38 @@
 
 ## Running it
 
-Load the plugin (see the README), then just describe what you want built:
+Load the plugin (see the README). Two skills become available:
+
+| | |
+|---|---|
+| `/prototypen:discover` | interactive, asks questions, writes `design/product-spec.md`, stops |
+| `/prototypen:prototype` | the unattended pipeline, phases 1–10 |
+
+### If the idea is still loose
+
+```
+/prototypen:discover
+```
+
+It asks in at most three rounds — the job and what it replaces today, who uses it
+and how often, platform, whether a brand already exists, scale and content
+realities, hard constraints, and what is out of scope. Then it writes
+`design/product-spec.md` and stops. Run `/prototypen:prototype` afterward; it
+picks the file up and skips its own intake.
+
+Discovery deliberately never asks what you want it to look like. Asked directly,
+that question returns "clean, modern, professional" from almost everyone — the
+generic default the plugin exists to escape. Visual decisions are made later,
+against research and a written direction.
+
+It is optional. Skipping it is not a degraded path — the pipeline writes the spec
+itself and records every guess under Assumptions, which you can read afterward.
+Use discovery when you would rather answer six questions than audit six
+assumptions.
+
+### If you can state it in a paragraph
+
+Just describe what you want built:
 
 > Design an app for a small logistics company to track shipments — a list of
 > active shipments with status, carrier, cost and ETA, a detail view per
@@ -149,7 +180,9 @@ The organization review still runs, even for a one-screen change.
 |---|---|
 | `Failed to access file ""` | No `.pen` file open in pen.dev. Open one. |
 | Pencil tools missing entirely | The `pencil` MCP server is not configured or not approved. Check `/mcp`. |
-| The skill does not trigger | Say what you want built more directly, or invoke it by name. |
+| The skill does not trigger | Say what you want built more directly, or invoke it by name: `/prototypen:prototype`. |
+| Discovery keeps asking questions | It caps at three rounds. Answer "decide you" to anything you do not care about — it will record it as an assumption. |
+| `/prototypen:prototype` re-did the intake | `design/product-spec.md` was missing or in another directory. It skips phase 1 only when that exact path exists. |
 | Changes to an agent file do nothing | Run `/reload-plugins`. Agents and `.mcp.json` are cached; `SKILL.md` is not. |
 | The designer stopped and reported a missing token | Working as intended. Amend `design/design-direction.md` with the missing definition and continue. |
 | Everything came out looking generic anyway | Read `design/design-direction.md`. If it does not name a committed choice, the constraint was never declared and the audit had nothing to check against. |
