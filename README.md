@@ -30,30 +30,101 @@ It runs unattended, end to end, and commits after every phase.
    it is connected with `/mcp`. See [docs/decisions.md](docs/decisions.md).
 3. **A git repository** in the project you are designing for.
 
-## Loading it during development
+## Workflow
+
+The working model is **one long first round, then short ones**. The first round
+establishes the constraints — research, brand, direction, tokens — and everything
+after it is executed within them.
+
+### 1. Open the canvas and start the session
+
+Open pen.dev with a `.pen` file, then from the project you are designing for:
 
 ```bash
+cd ~/projects/my-product
 claude --plugin-dir /home/leandro/projects/personal/prototypen-plugin
 ```
 
-Then just describe what you want built — you do not need to say "prototype":
+The project needs to be a git repository — the pipeline commits after each
+phase, and that is what makes step 5 possible.
+
+### 2. Describe what you want built
+
+You do not need to say "prototype", or name the skill:
 
 > Design an app for a small logistics company to track shipments: a list of
 > active shipments with status, carrier, cost and ETA, a detail view per
-> shipment, and a weekly cost report.
+> shipment, and a weekly cost report. Three dispatchers use it all day on
+> desktop.
+
+Include who uses it, in what context, and how often — the direction phase chooses
+between density and airiness on exactly that, and without it the choice defaults.
 
 Write in whatever language you want to work in. The plugin's own files are
-English; everything it *produces* — documents, audit reports, and the copy
-inside the prototype — follows your language. Filenames and canvas layer names
-stay English so they are stable between rounds.
+English; everything it *produces* — documents, audit reports, and the copy inside
+the prototype — follows your language. Filenames and canvas layer names stay
+English so they are stable between rounds.
 
-## Reloading after edits
+### 3. Let it run
 
-`skills/prototype/SKILL.md` and everything under `references/` is read fresh on
-each use — **edits apply immediately**.
+**This first round is long and takes no input.** There are no approval gates by
+design: research, brand, three design directions, the token system, every screen
+with its states, then the audit loop. Start it and come back.
 
-Changes to `agents/*.md`, `.claude-plugin/plugin.json`, or `.mcp.json` are
-cached. Run **`/reload-plugins`** after touching those.
+You can watch it happen — the canvas updates live, and `git log` fills in one
+commit per phase.
+
+### 4. Read two files, not everything
+
+When it stops:
+
+- **`design/design-direction.md`** — does the chosen direction commit to
+  something? It names one non-neutral decision it made. If that section is vague,
+  everything downstream had nothing to be held to, and that is the one problem
+  worth fixing before anything else.
+- **`design/audits/<date>.md`** — findings the loop resolved are already fixed.
+  What needs you are the **unresolved** ones: the visual-level failures that hit
+  the 3-cycle limit and were written down instead. Ten seconds of your judgment
+  beats a fourth pass.
+
+An audit with zero failures on a first run means the rubric is not biting — not
+that the work was perfect.
+
+### 5. Correct, then iterate
+
+**A wrong detail** — say it back in plain language: *"the error states are too
+loud, they compete with the primary action"*. It runs incrementally.
+
+**A wrong phase** — do not patch on top. Go back to that phase's commit and redo
+it, or a bad direction leaks into every screen built after it:
+
+```bash
+git log --oneline        # each commit names its phase
+git reset --hard <sha>
+```
+
+**More product** — just ask. From here on every round is incremental: it skips
+research, brand, and direction, loads the existing tokens and components first,
+and builds only what you asked.
+
+> Add bulk actions to the shipment list — select several shipments and change
+> their status at once.
+
+In this mode a hardcoded value where a token exists, or a new component
+duplicating an existing one, is a hard audit failure rather than a choice. That
+is what stops round eight from being a third design system.
+
+### 6. Hand off to code
+
+`design/design-spec.md` is the implementation contract: every token with its
+canvas variable name and its intended code name, every component with variants,
+states and props, and the rules a canvas cannot show — focus order, responsive
+behavior, motion, copy tone. It closes with the open findings from the audit.
+
+Point your implementation work at that file rather than at screenshots.
+
+Full detail — reading an audit, resuming an interrupted round, troubleshooting —
+in [docs/usage.md](docs/usage.md).
 
 ## What you get
 
@@ -70,6 +141,14 @@ design/
 
 Plus the `.pen` file, organized into a `Design System` region, a `Brand` region,
 and one region per flow with its screens in navigation order.
+
+## Reloading after edits
+
+`skills/prototype/SKILL.md` and everything under `references/` is read fresh on
+each use — **edits apply immediately**.
+
+Changes to `agents/*.md`, `.claude-plugin/plugin.json`, or `.mcp.json` are
+cached. Run **`/reload-plugins`** after touching those.
 
 ## Documentation
 
