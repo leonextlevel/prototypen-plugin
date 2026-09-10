@@ -1,0 +1,22 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+
+# Local Claude Code state (never the plugin's own components)
+.claude/settings.local.json
+
+# Scratch / logs
+*.log
+tmp/
+scratch/
+
+# NOTE: design/ is intentionally NOT ignored. Design artifacts are meant to be
+# versioned inside the projects that use this plugin. This repo is the plugin
+# itself and should not contain a design/ directory at all.
+
+# Scratch canvas used while building the plugin — not part of it
+/temp.pen
