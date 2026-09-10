@@ -271,3 +271,79 @@ preferences, and those are asked about explicitly.
 **Would change if:** discovery grows past collecting requirements — if it starts
 doing competitive scanning or sketching, it is duplicating phases 2 and 4 and
 should be folded back rather than expanded.
+
+---
+
+## 2026-09-09 — Viewport and theme are mandatory questions, and are handled differently
+
+**Decided:** `/prototypen:discover` always asks, in its first round, which
+viewports (desktop / mobile / both) and which themes (light / dark / both) are in
+scope, with a primary named for each. Both go into a **Targets** table in
+`design/product-spec.md`, and no later phase may narrow it.
+
+**Why they must be asked rather than inferred:** neither is volunteered, and both
+are expensive to change late. A desktop table and a mobile card list are
+different designs, not one design at two widths, so discovering "it's also mobile"
+after the direction phase means redoing the density and grid. Dark mode is worse:
+a palette that passes WCAG AA in light routinely fails in dark, so retrofitting
+it means rebuilding the palette that everything already references.
+
+**The non-obvious part — the two axes are handled differently**, which is what
+keeps the work linear instead of combinatorial. Two viewports and two themes
+could mean four screen sets; it means two.
+
+- **Viewport duplicates screens.** The designs genuinely differ. Flow regions are
+  split by viewport (`Flow — Checkout / Mobile`), and the primary viewport is
+  built and audited *first*, so a failed audit throws away half as much.
+- **Theme does not duplicate screens.** pen.dev variables are themed natively —
+  `SetVariables` takes `{value, theme: {mode: "dark"}}` arrays — so one screen
+  renders in every theme *provided every color is a variable*. A duplicated dark
+  canvas is four times the surface and it drifts, because someone fixes a label
+  in light and forgets dark.
+
+This promotes an existing rule to load-bearing: **no color literal, ever**. A
+hardcoded hex renders fine in the theme being looked at and silently breaks every
+other one, and it will not appear in the screenshot the auditor is reviewing. It
+is now rubric criterion 1.8, checked with `Get` without `resolveVariables`, next
+to 1.7 (every color token declares a value for every declared theme). Contrast
+(3.6) is checked **per theme**, and a small `Theme Check` set of two or three
+representative screens gets screenshotted in the non-default theme rather than
+assuming it inverts cleanly.
+
+**Would change if:** pen.dev's themed variables stop covering a case that matters
+— per-theme imagery, or a theme that changes layout rather than only color. Then
+that specific case gets a duplicated screen, not the whole set.
+
+---
+
+## 2026-09-09 — README in Portuguese and presentational; technical detail moved out
+
+**Decided:** `README.md` is the GitHub presentation of the project, written in
+Portuguese. The operational detail it used to carry — prerequisites, loading,
+reloading, validation, repository layout, structural rules, language convention —
+moved to `docs/development.md`.
+
+**Why:** the README was doing two jobs badly. It opened as a pitch and then
+turned into a runbook, so a visitor landing from GitHub had to read setup
+instructions to find out what the thing does, and someone actually installing it
+had the setup interleaved with positioning. Splitting them lets the README argue
+for the approach — the generic-design problem, constraint before generation,
+isolated audit, and the handful of design decisions that explain the shape — and
+lets `development.md` be the runbook.
+
+Portuguese is the user's language and the intended audience of the GitHub page.
+This is a deliberate, single exception to the plugin's English convention, noted
+in the README itself and in `development.md`: everything *internal* — skills,
+references, agent prompts, templates, and `docs/` — stays English, because that
+is what the model reads and what keeps artifacts stable across users.
+
+**Not a `CLAUDE.md`.** The user suggested one as a possible home. It would be the
+wrong file twice over: a `CLAUDE.md` at the plugin root is not loaded as project
+context (it is a rule in this plugin's own build spec, and the reason instructions
+live in skills), and the content being moved is documentation for humans, not
+context for a model. `docs/development.md` sits with the rest of the
+documentation and is reachable from the README's table.
+
+**Structural rules and validation now live in one place.** They were duplicated
+between `contributing.md` and the new `development.md`; `contributing.md` now
+points at it rather than restating it, so the two cannot drift apart.

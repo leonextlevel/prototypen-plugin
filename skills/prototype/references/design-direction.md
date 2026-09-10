@@ -10,6 +10,21 @@ its own sake — it is that a choice you can only make by rejecting alternatives
 is a choice you can defend in writing, and a choice you can defend in writing is
 one the audit can check against.
 
+## Step 0 — Read the targets
+
+Open `design/product-spec.md` and read the **Targets** table before anything
+else: which viewports, which themes, and which is primary in each.
+
+Everything in step 3 is specified **for all of them**. This is not a detail to
+handle later — the two decisions that most constrain a direction are density
+(which differs per viewport) and palette (which must hold in every theme), and
+both are decided here. A direction written for light-desktop and retrofitted to
+dark-mobile is a direction rewritten.
+
+If the Targets table is missing, the spec was written before this rule existed.
+Decide the targets yourself, write them into the spec, and say so — do not
+proceed with them unstated.
+
 ## Step 1 — Pick two axes
 
 Pick **two** of these for this project. Not one (no room to diverge), not four
@@ -54,9 +69,19 @@ state:
    printing process, a time of day, an archive), then the colors derived from
    it. Neutrals included, and named as part of the palette rather than
    defaulted to gray. State the intended value distribution.
+
+   **One palette per declared theme.** A dark theme is designed, not computed:
+   inverting a light palette produces muddy neutrals, accents that glare, and
+   shadows that do nothing. Derive the dark values from the same concept, and
+   state for each theme the contrast pairs that must hold — because a palette
+   that passes AA in light routinely fails it in dark, and the audit checks both.
 5. **Target density** — stated concretely: base spacing unit, the spacing scale
-   derived from it, and roughly how much a primary view should hold.
-6. **Grid** — columns, gutters, max widths, and the breakpoints that matter.
+   derived from it, and roughly how much a primary view should hold. **Per
+   declared viewport**: density is the main thing that legitimately differs
+   between desktop and mobile, and stating one number for both means one of them
+   was not designed.
+6. **Grid** — columns, gutters, max widths, and the breakpoints that matter,
+   **per declared viewport**, with the target width each assumes.
 7. **Edge treatment** — border radius (and where it varies and why), border
    weight and use, and whether depth is carried by shadow, border, value, or
    overlap. "Shadow" as the automatic answer is on the ban list.
@@ -64,6 +89,11 @@ state:
    does not move. "None, deliberately" is a valid and often good answer.
 9. **What this direction rejects** — the trade-off it accepts. A direction that
    claims no cost has not committed to anything.
+
+A direction that can only work in one theme, or only at one viewport, when both
+are in scope, is **not a candidate**. Discard it and generate another; the
+targets are not negotiable and a direction that fights them will be fought all
+the way to handoff.
 
 Every direction must be compatible with `design/brand.md` if a brand exists.
 **If none of the three can live with the brand, the directions are wrong — not

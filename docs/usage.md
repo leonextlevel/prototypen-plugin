@@ -2,18 +2,13 @@
 
 ## Prerequisites
 
-1. **pen.dev running, with a `.pen` file open in the editor.** Every Pencil MCP
-   tool — including the ones that just read state — fails with
-   `Failed to access file ""` when nothing is open. This is the most common
-   cause of a run that dies at phase 5.
-2. **The `pencil` MCP server configured and connected.** This plugin does not
-   ship an `.mcp.json`; see the README for why. Check with `/mcp`.
-3. **A git repository** in the project you are designing for. The pipeline
-   commits after every phase.
+pen.dev running with a `.pen` file open, the `pencil` MCP server connected, and
+a git repository in the project you are designing for. Full detail — including
+why no `.mcp.json` is shipped — in [development.md](development.md).
 
 ## Running it
 
-Load the plugin (see the README). Two skills become available:
+Load the plugin ([development.md](development.md)). Two skills become available:
 
 | | |
 |---|---|

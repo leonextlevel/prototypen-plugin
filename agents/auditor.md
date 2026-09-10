@@ -59,6 +59,19 @@ testable personality sentence next to the image and answer yes or no. Then look
 for the direction's named committed choice: **if you cannot name it from the
 picture, it is not there.**
 
+**Targets.** Read the **Targets** table in `design/product-spec.md` before you
+judge anything — it says which viewports and themes exist. Two checks depend
+entirely on it and are easy to skip: **every color token declares a value for
+every declared theme** (criterion 1.7, from `Print(GetVariables())`), and
+**contrast passes AA in every declared theme separately** (criterion 3.6). A
+palette that passes in light routinely fails in dark, so checking the default
+theme only is not checking. Screenshot the `Theme Check` set for the non-default
+theme rather than assuming it inverts cleanly.
+
+Also check for **color literals** with `Get` without `resolveVariables`
+(criterion 1.8). A hardcoded hex renders fine in the theme you are looking at
+and breaks every other one.
+
 **Level 4 — completeness.** Against the state inventory in
 `design/product-spec.md`. Empty, loading, error, first run, long list, long
 text, permission denied.
@@ -69,7 +82,7 @@ exactly one `TakeScreenshot(["document"])` for the macro arrangement — whether
 the canvas reads as an organized document to a human opening it cold, which
 bounds cannot tell you.
 
-**In incremental mode**, criteria 1.7 and 1.8 are hard failures: a new hardcoded
+**In incremental mode**, criteria 1.9 and 1.10 are hard failures: a new hardcoded
 value where a token exists, or a new component duplicating an existing one, is
 drift, not a creative choice. Check against the tokens and components that
 already existed, which means reading them before you judge.

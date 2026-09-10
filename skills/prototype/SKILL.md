@@ -37,6 +37,32 @@ Detect the user's language from their own messages and work in it.
   canvas copy in it"). Without this the auditor hands a Portuguese-speaking user
   an English report.
 
+## Targets are a contract
+
+`design/product-spec.md` carries a **Targets** table: which viewports (desktop,
+mobile, or both) and which themes (light, dark, or both), with a primary named
+for each. `/prototypen:discover` always asks; when it has not run, phase 1
+decides and records the decision.
+
+**Every phase is bound by that table and none may narrow it.** The direction
+declares a density and grid per viewport and a palette per theme; the tokens are
+themed variables; the canvas carries a screen set per viewport; the audit checks
+contrast in every declared theme.
+
+Two rules keep this from multiplying the work:
+
+- **Viewport duplicates screens.** A desktop table and a mobile card list are
+  different designs, not one design at two widths. Build the primary viewport
+  first and completely, through the audit; derive the second from a design that
+  has already been judged.
+- **Theme does not duplicate screens.** pen.dev variables are themed natively, so
+  one screen renders in every theme *provided every color is a variable*. A
+  hardcoded hex is the single defect that silently breaks a whole theme. Verify
+  with a small `Theme Check` set of two or three representative screens, not a
+  duplicated canvas.
+
+Details in `references/canvas-structure.md`.
+
 ## Step 0 — Mode detection (do this first, always)
 
 Look at `design/` in the current project before anything else.
@@ -88,7 +114,9 @@ unattended run; the audit phases are the quality control, not the user.
 `/prototypen:discover` produces that file interactively; when it has run, the
 intake is done and redoing it would discard answers a human actually gave.
 
-Otherwise, write it yourself from `templates/product-spec.template.md`: personas,
+Otherwise, write it yourself from `templates/product-spec.template.md`: the
+**Targets** table (viewports and themes — decide them, never leave them
+unstated), personas,
 the jobs each one hires the product for, the core loop, the screen inventory, and
 **every state per screen** (empty, loading, error, first run, long list, long
 text, permission denied). The state inventory here is what the completeness audit
@@ -133,8 +161,10 @@ The brand enters phase 4 as a **constraint, not a suggestion**.
 Read `references/design-direction.md` before running this phase, and
 `references/anti-generic.md` alongside it.
 
-Pick two divergence axes for this project. Produce three directions placed at
-genuinely different points on them. Each direction declares a type pairing and a
+Read the Targets table first. Pick two divergence axes for this project. Produce
+three directions placed at genuinely different points on them, each one specified
+for **every declared viewport and theme** — a direction that only works at one
+viewport, or in one theme, is not a candidate. Each direction declares a type pairing and a
 modular scale with its stated ratio, a palette derived from a concept, a target
 density, a grid, a border/radius/shadow treatment, a motion treatment, and a
 one-sentence testable personality.
@@ -154,8 +184,9 @@ Read `references/canvas-structure.md` before this phase. It is the whole
 specification for this step.
 
 Delegate to `prototypen:designer`: create the **named, empty box grid first** —
-a region for the design system, a region for the brand, one region per flow —
-and nothing inside them yet. Creating elements first and organizing afterward
+a region for the design system, a region for the brand, and one region per flow
+**per declared viewport** (`Flow — Checkout / Mobile`) — and nothing inside them
+yet. Creating elements first and organizing afterward
 does not work; the canvas has to be built into a skeleton that already exists.
 
 ### 6 — System
@@ -163,7 +194,9 @@ does not work; the canvas has to be built into a skeleton that already exists.
 Delegate to `prototypen:designer`. Tokens go in as **variables in the `.pen`
 file** (`SetVariables`), never as repeated literal values: color, type scale,
 spacing, radius, border, shadow, from `design/design-direction.md` and
-`design/brand.md`. Then the base components, each placed in the design-system
+`design/brand.md`. **Every color token carries a value for every declared
+theme**, as a `{value, theme}` array — a token with one value in a two-theme
+project breaks that theme everywhere it is used. Then the base components, each placed in the design-system
 region with its variants and states laid out beside it.
 
 The designer may not invent a token. If something is needed that the direction
@@ -174,7 +207,16 @@ does not define, it stops and reports; you decide and amend the direction file.
 One `prototypen:designer` subagent per flow, in parallel. Each gets: the
 direction file, the brand file, the token and component names that already
 exist, the flow's screens and states from the product spec, its target box in
-the canvas grid, and the user's language.
+the canvas grid, **its viewport and that viewport's density and grid**, and the
+user's language.
+
+Run the **primary viewport for every flow first**, audit it, and only then derive
+the second viewport. Building both at once doubles the work that a failed audit
+throws away.
+
+When dark is in scope, finish by building the `Theme Check` set — two or three
+representative screens (the densest, one carrying imagery, one with an error or
+destructive state) in the design-system region.
 
 Screens go inside their flow's box in navigation order.
 

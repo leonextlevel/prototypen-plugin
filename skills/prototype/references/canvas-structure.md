@@ -55,6 +55,49 @@ document
 - **One region per flow.** Two flows never share a region. A screen that
   genuinely belongs to two flows is instanced, not duplicated by hand.
 
+### 3b. Viewports duplicate screens; themes do not
+
+This is the rule that keeps a multi-target project from exploding. Two viewports
+and two themes could mean four screen sets. It means **two**.
+
+**Viewport is a real duplication.** A desktop table and a mobile card list are
+different designs, not one design at two widths — different density, different
+grid, different navigation, often a different information order. They get
+separate screen frames, and the flow region is split by viewport:
+
+```
+document
+├── [Design System]
+├── [Brand]
+├── [Flow — Checkout / Desktop]
+└── [Flow — Checkout / Mobile]
+```
+
+Build the **primary viewport first, completely**, through the audit. The second
+viewport is derived from a design that has already been judged, not invented
+alongside it.
+
+**Theme is not a duplication.** pen.dev variables are themed natively —
+`SetVariables` takes `{value, theme: {mode: "dark"}}` arrays — so the *same*
+screen renders in every declared theme when its colors reference variables. A
+duplicated dark screen set is four times the canvas, and it drifts: someone fixes
+a label in light and forgets dark.
+
+So, when dark is in scope:
+
+- **Every color token declares a value for every declared theme.** No exceptions.
+- **No color literal anywhere on a screen.** A hardcoded hex cannot theme, so it
+  is the one defect that silently breaks the entire dark mode. This was already a
+  rule; with a second theme in scope it becomes load-bearing.
+- **Build a small theme-verification set, not a full one.** Pick two or three
+  representative screens — the densest, the one carrying imagery, and one with an
+  error or destructive state — and place them in the design-system region under a
+  `Theme Check — <theme>` box, so contrast in the non-default theme is verified
+  visually rather than assumed.
+
+The audit then checks contrast **in every declared theme** (rubric 3.6), because
+a palette that passes AA in light routinely fails it in dark.
+
 ### 4. Inside a flow, screens follow navigation order
 
 Screens sit in the order the user walks them, with a predictable reading
@@ -74,7 +117,9 @@ the design — labels, headings, microcopy — follows the user's language.
 | Thing | Pattern | Example |
 |---|---|---|
 | Region | `Flow — <Flow Name>` / `Design System` / `Brand` | `Flow — Checkout` |
+| Region, multi-viewport | `Flow — <Flow Name> / <Viewport>` | `Flow — Checkout / Mobile` |
 | Screen | `<NN> <Screen Name>` | `03 Payment Method` |
+| Theme check | `Theme Check — <Theme>` | `Theme Check — Dark` |
 | State variant | `<NN> <Screen Name> — <State>` | `03 Payment Method — Error` |
 | Component | `<Component Name>` | `Button` |
 | Component variant | `<Component> / <Variant>` | `Button / Secondary` |
@@ -103,6 +148,8 @@ Check, in this order:
 | 7 | Screen out of flow order | screen `NN` prefixes vs. left-to-right `bounds.x` order in the region |
 | 8 | Flows mixed in one region | a screen in a region whose flow name does not match |
 | 9 | Inconsistent gap between screens | diff the gaps within a region |
+| 10 | A declared viewport with no screen set | region names vs. the Targets table in `design/product-spec.md` |
+| 11 | Two viewports mixed in one region | screen widths within a region |
 
 Checks 1–8 are structural and need **no screenshot**. Run them with `Get`
 visitors and `Print`. Then take **one** `TakeScreenshot(["document"])` for the

@@ -7,6 +7,21 @@
 ## Summary
 <One paragraph: what this product is, for whom, and what it replaces today.>
 
+## Targets
+<Decided, not assumed. Every later phase is bound by this table and none may
+narrow it. If the user did not state one, decide, and record the decision under
+Assumptions.>
+
+| | Targets | Primary | Notes |
+|---|---|---|---|
+| **Viewport** | <desktop / mobile / both> | <which one is designed first> | <target widths for each> |
+| **Theme** | <light / dark / both> | <which one is the default> | <any theme-specific constraint> |
+
+<A desktop table and a mobile card list are two designs, not one design at two
+widths. A palette that passes contrast in light frequently fails in dark. Both
+decisions have to reach the direction phase before any color or density is
+chosen.>
+
 ## Personas
 <Two to four. For each: who they are, their context of use, their level of
 domain expertise, and what device and situation they are in. No demographics

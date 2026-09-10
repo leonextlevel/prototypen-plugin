@@ -1,191 +1,172 @@
 # prototypen
 
-Autonomous product prototyping on the [Pencil (pen.dev)](https://pen.dev)
-canvas. Give it an idea and its requirements; it produces a navigable prototype,
-a complete design system, and the design documents that hand off to
-implementation.
+**Prototipagem autônoma de produto no canvas do [Pencil (pen.dev)](https://pen.dev).**
+Entra uma ideia com requisitos; sai um protótipo navegável, um sistema de design
+completo e os documentos que fazem o handoff para a implementação.
 
-## What it is for
+Um plugin para o [Claude Code](https://claude.com/claude-code).
 
-AI-generated design has a recognizable face: Inter, blue `#3b82f6`, a white card
-with a soft shadow, a centered hero with two CTAs, a purple gradient, an icon in
-a pastel circle. Not because models are bad at design — because that is the
-statistical center of everything they were trained on.
+---
 
-Asking for creativity does not move it. `prototypen` moves it by **declaring
-constraint before generation** — research, then brand, then a design direction
-chosen out of three genuine alternatives — and then **auditing the result in a
-separate context** against that written constraint.
+## O problema
 
-It runs unattended, end to end, and commits after every phase.
+Design gerado por IA tem uma cara reconhecível: Inter, azul `#3b82f6`, card
+branco com sombra suave, hero centralizado com dois CTAs, gradiente roxo, ícone
+em círculo pastel.
 
-## Prerequisites
+Não é que os modelos sejam ruins de design — é que isso é o centro estatístico de
+tudo que eles viram. E pedir criatividade não move: "seja ousado" devolve o mesmo
+resultado com outros adjetivos.
 
-1. **pen.dev running, with a `.pen` file open in the editor.** Every Pencil MCP
-   tool fails without one — this is the most common cause of a dead run.
-2. **The `pencil` MCP server configured.** This plugin deliberately ships no
-   `.mcp.json`: the server is registered by the pen.dev editor extension itself,
-   its launch command is an absolute, platform- and version-pinned path, and
-   duplicating it in project scope would only add an approval prompt. Check that
-   it is connected with `/mcp`. See [docs/decisions.md](docs/decisions.md).
-3. **A git repository** in the project you are designing for.
+## A abordagem
 
-## Workflow
+O `prototypen` ataca por dois lados:
 
-The working model is **one long first round, then short ones**. The first round
-establishes the constraints — research, brand, direction, tokens — and everything
-after it is executed within them.
+**Restrição declarada antes da geração.** Três fases produzem zero pixels e são
+onde está quase todo o valor: pesquisa mapeia o que a categoria já ocupa, a marca
+toma posição contra isso, e a direção de design escolhe entre três alternativas
+reais e escreve a especificação. Quando o primeiro elemento é desenhado, o espaço
+de designs aceitáveis já é pequeno o bastante para o default genérico estar fora
+dele.
 
-### 1. Open the canvas and start the session
+**Auditoria em contexto separado.** Quem julga não é quem desenhou. Um agente
+revisando o próprio trabalho no mesmo contexto já se convenceu de cada decisão
+uma vez — ele não re-deriva o julgamento, ele recupera a justificativa. Um
+contexto novo tem só o artefato, a rubrica e os arquivos de restrição.
 
-Open pen.dev with a `.pen` file, then from the project you are designing for:
+Isso também é o que torna a auditoria possível: *"esse design está bom?"* não tem
+resposta verificável, mas *"isso bate com a frase de personalidade escrita na
+direção, e a escolha comprometida está visível?"* tem.
 
-```bash
-cd ~/projects/my-product
-claude --plugin-dir /home/leandro/projects/personal/prototypen-plugin
-```
+---
 
-The project needs to be a git repository — the pipeline commits after each
-phase, and that is what makes step 5 possible.
-
-Two skills become available, both invocable by name or triggered from a plain
-request: **`/prototypen:discover`** (interactive, collects requirements) and
-**`/prototypen:prototype`** (the unattended pipeline).
-
-### 2. Describe what you want built
-
-Two entry points, depending on how settled the idea is.
-
-**If you can state the product in a paragraph**, just say it — you do not need
-to name the skill or say "prototype":
-
-> Design an app for a small logistics company to track shipments: a list of
-> active shipments with status, carrier, cost and ETA, a detail view per
-> shipment, and a weekly cost report. Three dispatchers use it all day on
-> desktop.
-
-Include **who uses it, in what context, and how often**. The direction phase
-chooses between dense and airy on exactly that, and without it the choice
-defaults.
-
-**If the idea is still loose** — the requirements are in your head rather than in
-a paragraph — run discovery first:
+## Como funciona
 
 ```
-/prototypen:discover
+/prototypen:discover     opcional, interativo, coleta os requisitos
+        ↓
+/prototypen:prototype    dez fases, sem supervisão, commit a cada fase
 ```
 
-It asks the questions worth asking, in at most three rounds, and writes
-`design/product-spec.md`. Then `/prototypen:prototype` picks that file up and
-skips its own intake. This is the only interactive step in the plugin; it is
-optional, and it is where a human's knowledge of the domain actually gets in.
+| Fase | Saída | Quem faz |
+|---|---|---|
+| Intake | personas, jobs, inventário de telas e estados | a skill |
+| Pesquisa | concorrentes, convenções, antipadrões, território de marca ocupado | `researcher` |
+| Marca *(condicional)* | nome, posicionamento, tom, paleta, logo em SVG | `brand-designer` |
+| Direção | 3 direções em eixos opostos, a escolha e o porquê | a skill |
+| Estrutura do canvas | a grade de caixas nomeadas, vazia, antes de qualquer elemento | `designer` |
+| Sistema | tokens como variáveis do `.pen`, componentes base | `designer` |
+| Telas | um subagente por fluxo, em paralelo | `designer` |
+| Auditoria | veredito binário por critério, em loop de correção | `auditor` |
+| Organização | varredura final do canvas, obrigatória | `auditor` |
+| Handoff | o mapa de tokens e componentes para o código | a skill |
 
-One thing it deliberately never asks is what you want it to look like — asked
-directly, that question produces "clean, modern, professional", which is the
-generic default this plugin exists to escape. The visual decisions are made
-later, against evidence.
+A rodada inteira roda sem supervisão. Não existem gates de aprovação — as fases
+de auditoria são o controle de qualidade, não a sua atenção.
 
-Write in whatever language you want to work in. The plugin's own files are
-English; everything it *produces* — documents, audit reports, and the copy inside
-the prototype — follows your language. Filenames and canvas layer names stay
-English so they are stable between rounds.
-
-### 3. Let it run
-
-**This first round is long and takes no input.** There are no approval gates by
-design: research, brand, three design directions, the token system, every screen
-with its states, then the audit loop. Start it and come back.
-
-You can watch it happen — the canvas updates live, and `git log` fills in one
-commit per phase.
-
-### 4. Read two files, not everything
-
-When it stops:
-
-- **`design/design-direction.md`** — does the chosen direction commit to
-  something? It names one non-neutral decision it made. If that section is vague,
-  everything downstream had nothing to be held to, and that is the one problem
-  worth fixing before anything else.
-- **`design/audits/<date>.md`** — findings the loop resolved are already fixed.
-  What needs you are the **unresolved** ones: the visual-level failures that hit
-  the 3-cycle limit and were written down instead. Ten seconds of your judgment
-  beats a fourth pass.
-
-An audit with zero failures on a first run means the rubric is not biting — not
-that the work was perfect.
-
-### 5. Correct, then iterate
-
-**A wrong detail** — say it back in plain language: *"the error states are too
-loud, they compete with the primary action"*. It runs incrementally.
-
-**A wrong phase** — do not patch on top. Go back to that phase's commit and redo
-it, or a bad direction leaks into every screen built after it:
-
-```bash
-git log --oneline        # each commit names its phase
-git reset --hard <sha>
-```
-
-**More product** — just ask. From here on every round is incremental: it skips
-research, brand, and direction, loads the existing tokens and components first,
-and builds only what you asked.
-
-> Add bulk actions to the shipment list — select several shipments and change
-> their status at once.
-
-In this mode a hardcoded value where a token exists, or a new component
-duplicating an existing one, is a hard audit failure rather than a choice. That
-is what stops round eight from being a third design system.
-
-### 6. Hand off to code
-
-`design/design-spec.md` is the implementation contract: every token with its
-canvas variable name and its intended code name, every component with variants,
-states and props, and the rules a canvas cannot show — focus order, responsive
-behavior, motion, copy tone. It closes with the open findings from the audit.
-
-Point your implementation work at that file rather than at screenshots.
-
-Full detail — reading an audit, resuming an interrupted round, troubleshooting —
-in [docs/usage.md](docs/usage.md).
-
-## What you get
+## O que você recebe
 
 ```
 design/
-├── product-spec.md      personas, jobs, screen and state inventory
-├── research.md          competitors, conventions, antipatterns, sources
-├── brand.md             name, positioning, tone, palette, logo rules
-├── brand/logo/*.svg     five logo variants
-├── design-direction.md  three directions, the choice, and why
-├── design-spec.md       the handoff: tokens → code, components, rules
-└── audits/<date>.md     every criterion, PASS or FAIL
+├── product-spec.md      personas, jobs, alvos, inventário de telas e estados
+├── research.md          concorrentes, convenções, antipadrões, fontes
+├── brand.md             nome, posicionamento, tom, paleta, regras do logo
+├── brand/logo/*.svg     cinco variações
+├── design-direction.md  três direções, a escolha e por que as outras caíram
+├── design-spec.md       o handoff: tokens → código, componentes, regras
+└── audits/<data>.md     cada critério, PASS ou FAIL
 ```
 
-Plus the `.pen` file, organized into a `Design System` region, a `Brand` region,
-and one region per flow with its screens in navigation order.
+Mais o arquivo `.pen`, organizado em uma região de sistema de design, uma de
+marca e uma por fluxo, com as telas em ordem de navegação.
 
-## Reloading after edits
+---
 
-`skills/prototype/SKILL.md` and everything under `references/` is read fresh on
-each use — **edits apply immediately**.
+## Decisões de projeto
 
-Changes to `agents/*.md`, `.claude-plugin/plugin.json`, or `.mcp.json` are
-cached. Run **`/reload-plugins`** after touching those.
+Algumas escolhas que explicam por que o plugin tem o formato que tem.
 
-## Documentation
+**A ban list é explícita.** Inter, `#3b82f6`, o gradiente roxo-azul, o card com
+sombra difusa, o hero centralizado, o ícone em círculo pastel — cada item é
+proibido a menos que a direção de design justifique pelo nome, por escrito, antes
+da geração. Uma justificativa escrita durante a auditoria para desculpar algo já
+desenhado não conta.
+
+**Ela restringe o visual, nunca a interação.** Usuários aprenderam onde fica o
+filtro, o que é um botão de salvar, que ação destrutiva confirma antes. Isso é
+pesquisa que todo mundo já pagou. Quebrar produz um protótipo original e
+inusável. Originalidade vai em *como parece*; convenção fica em *onde as coisas
+estão e como se comportam*.
+
+**O `designer` não pode escrever arquivos.** Um agente que esbarra num token
+faltando e *pode* editar a direção adiciona o token e segue — a rodada passa e a
+restrição deixou de existir em silêncio. Sem permissão de escrita, ele só tem uma
+saída: parar e reportar. Esse relatório é a única forma do arquivo de direção ser
+corrigido em vez de violado.
+
+**O `auditor` não conserta nada.** Um agente que pode consertar o que encontra
+tende a encontrar o que é fácil consertar.
+
+**Viewport duplica telas; tema não.** Desktop e mobile são designs diferentes, não
+o mesmo design em duas larguras. Já tema vai por variável temática do pen.dev — a
+mesma tela renderiza em ambos, *desde que nenhuma cor seja literal*. Um hex
+cravado é o defeito que quebra um tema inteiro em silêncio.
+
+**Perguntar tem hora.** O `discover` pergunta porque nada foi gerado ainda: uma
+pergunta custa uma troca e pode redirecionar a rodada toda. O pipeline não
+pergunta porque geração está em curso e uma pergunta custa a autonomia da rodada.
+O que o `discover` nunca pergunta é como você quer que fique — essa pergunta
+devolve "clean, modern, professional" de quase todo mundo, que é a descrição
+literal do default que o plugin existe para escapar.
+
+**Idioma.** O plugin é escrito em inglês; tudo que ele produz acompanha o seu
+idioma — documentos, relatórios de auditoria e a copy dentro do protótipo. Nomes
+de arquivo e de camadas do canvas continuam em inglês, para ficarem estáveis
+entre rodadas.
+
+---
+
+## Começando
+
+Pré-requisitos: pen.dev rodando com um arquivo `.pen` aberto, o servidor MCP
+`pencil` conectado, e o projeto alvo sendo um repositório git.
+
+```bash
+cd ~/projetos/meu-produto
+claude --plugin-dir /caminho/para/prototypen-plugin
+```
+
+Depois é só descrever o que você quer construir — não precisa dizer "protótipo"
+nem nomear a skill:
+
+> Projete um app para uma transportadora pequena acompanhar fretes: uma lista dos
+> fretes ativos com status, transportadora, custo e previsão, uma visão de
+> detalhe por frete e um relatório semanal de custo. Três operadores usam o dia
+> inteiro no desktop.
+
+Se a ideia ainda está solta, rode `/prototypen:discover` antes — ele faz as
+perguntas que valem a pena, em no máximo três rodadas, e escreve o
+`product-spec.md` que o pipeline consome.
+
+O passo a passo completo está em **[docs/usage.md](docs/usage.md)**, e a
+instalação e o desenvolvimento do plugin em
+**[docs/development.md](docs/development.md)**.
+
+## Documentação
 
 | | |
 |---|---|
-| [docs/architecture.md](docs/architecture.md) | the pieces, what each decides, and why the audit is isolated |
-| [docs/pipeline.md](docs/pipeline.md) | the ten phases, their artifacts, conditionals, and commit points |
-| [docs/usage.md](docs/usage.md) | running it, reading an audit, resuming an interrupted round |
-| [docs/contributing.md](docs/contributing.md) | how to evolve it without making it worse |
-| [docs/decisions.md](docs/decisions.md) | decisions taken while building it, with reasons |
-| [evals/README.md](evals/README.md) | the reference cases to run after any significant change |
+| [docs/usage.md](docs/usage.md) | como rodar, ler uma auditoria, retomar uma rodada interrompida |
+| [docs/development.md](docs/development.md) | pré-requisitos, carregamento, validação, regras estruturais |
+| [docs/architecture.md](docs/architecture.md) | as peças, o que cada uma decide, por que a auditoria é isolada |
+| [docs/pipeline.md](docs/pipeline.md) | as dez fases em detalhe, artefatos, condicionais, pontos de commit |
+| [docs/contributing.md](docs/contributing.md) | como evoluir o plugin sem piorá-lo |
+| [docs/decisions.md](docs/decisions.md) | cada decisão tomada na construção, com o motivo |
+| [evals/README.md](evals/README.md) | os casos de referência para rodar após qualquer mudança grande |
 
-## License
+> A documentação em `docs/` é escrita em inglês, seguindo a convenção interna do
+> plugin. Este README é a exceção deliberada: é a apresentação do projeto.
+
+## Licença
 
 MIT

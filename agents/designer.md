@@ -41,6 +41,22 @@ anything, read what already exists: `Print(GetVariables())` for the tokens, and
 a `Get` visitor over the design-system region for the components. **Reuse beats
 recreate, every time.**
 
+## Targets bind you
+
+`design/product-spec.md` has a **Targets** table: the declared viewports and
+themes. Your task prompt names which viewport you are building. Read both.
+
+- **Build for the viewport you were given**, using that viewport's density and
+  grid from `design/design-direction.md`. Do not rescale the other viewport's
+  layout — a desktop table and a mobile card list are different designs.
+- **Every color you set must be a `$variable`, never a literal.** When more than
+  one theme is declared, the variables carry a value per theme and the screen
+  renders in both automatically. A hardcoded hex cannot theme: it is the one
+  defect that silently breaks an entire theme wherever it appears, and it will
+  not show up in the screenshot you are looking at.
+- If a color token is missing a value for a declared theme, that is a missing
+  token — **stop and report it**, exactly as with any other missing token.
+
 ## The rule you must not break
 
 **You may not invent a design token, a color, a typeface, a size, a spacing

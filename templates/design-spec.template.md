@@ -7,6 +7,16 @@
 > This is the handoff document: what an implementer needs that the canvas
 > cannot show.
 
+## Targets
+<The viewports and themes this design covers, carried from
+design/product-spec.md. An implementer reads this first — it says which screen
+sets and which theme values exist.>
+
+| | Targets | Primary |
+|---|---|---|
+| **Viewport** | | |
+| **Theme** | | |
+
 ## How to read this
 <Where the canvas file is, how the regions are organized, and how a name here
 maps to a node there.>
@@ -46,8 +56,8 @@ implementation needs. Include the canvas node name so it can be found.>
 - **Behavior the canvas cannot show:** <Focus handling, keyboard interaction, truncation, responsive collapse.>
 
 ## Screens
-| Flow | Screen | Canvas node | States built | Notes |
-|---|---|---|---|---|
+| Flow | Screen | Viewport | Canvas node | States built | Notes |
+|---|---|---|---|---|---|
 
 ## Rules the canvas cannot show
 - **Focus order:** <Per screen where it is not obvious.>

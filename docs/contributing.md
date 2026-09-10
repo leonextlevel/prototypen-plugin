@@ -6,23 +6,9 @@
 claude plugin validate .
 ```
 
-Several of this plugin's structural rules (only `plugin.json` inside
-`.claude-plugin/`, no absolute paths, no `../`, every SKILL.md carrying a
-`name`) are exactly the things that work under `--plugin-dir` and break when the
-plugin is installed from a marketplace. The validator catches that gap before a
-user does.
-
-**Expect exactly one warning, and no more:**
-
-```
-⚠ version: No version specified. Consider adding a version following semver
-✔ Validation passed with warnings
-```
-
-That warning is the intended state — rule 5 below requires no `version`, so the
-version comes from the commit SHA. **Do not "fix" it by adding one.** It also
-means `--strict` fails by design, since `--strict` promotes warnings to errors;
-see `decisions.md`. If a *second* warning ever appears, that one is real.
+**Expect exactly one warning** — the missing `version`, which is the intended
+state. `--strict` fails by design. If a *second* warning appears, that one is
+real. Detail in [development.md](development.md).
 
 ## The rule that keeps this plugin from growing wrong
 
@@ -78,24 +64,12 @@ anything that changes behavior. Read the outputs against the general checks in
 
 ## Structural rules that cannot be violated
 
-These come from the Claude Code plugin reference. Breaking one produces a plugin
-that works today via `--plugin-dir` and breaks on marketplace install.
-
-1. **Only `plugin.json` lives inside `.claude-plugin/`.** `skills/`, `agents/`,
-   `hooks/`, and `.mcp.json` live at the plugin root.
-2. **Every SKILL.md has `name` in its frontmatter.** Without it, Claude Code
-   falls back to the installation directory name — which for a marketplace
-   plugin is a version string that changes on every update, silently breaking
-   every reference to the skill.
-3. **No absolute paths.** Component paths are relative to the plugin root and
-   start with `./`. Packaged scripts and files are referenced through
-   `${CLAUDE_PLUGIN_ROOT}`.
-4. **Nothing outside the plugin root.** No `../`, no symlink pointing out.
-5. **No `version` in `plugin.json`.** Without it the version comes from the
-   commit SHA, which is the right mode for a plugin under active development.
-6. **Plugin agents accept only** `name`, `description`, `model`, `effort`,
-   `maxTurns`, `tools`, `disallowedTools`, `skills`, `memory`, `background`,
-   `isolation`. Not `hooks`, not `mcpServers`, not `permissionMode`.
+Six of them, listed in [development.md](development.md) — only `plugin.json`
+inside `.claude-plugin/`, `name` in every SKILL.md frontmatter, no absolute
+paths, nothing outside the plugin root, no `version`, and the closed set of agent
+frontmatter fields. Breaking one produces a plugin that works locally via
+`--plugin-dir` and breaks on marketplace install, which local testing will not
+catch.
 
 ## Editing conventions
 

@@ -9,7 +9,7 @@ The skill inspects `design/` before doing anything else.
 | Condition | Mode | Effect |
 |---|---|---|
 | `design/design-direction.md` absent | **Bootstrap** | Full pipeline, phases 1–10 |
-| `design/design-direction.md` present | **Incremental** | Skip phases 2 and 4; load existing constraints first; audit gains criteria 1.7 and 1.8 |
+| `design/design-direction.md` present | **Incremental** | Skip phases 2 and 4; load existing constraints first; audit gains criteria 1.9 and 1.10 |
 
 **Incremental mode loads before it touches anything:** `design/brand.md`,
 `design/design-direction.md`, `design/design-spec.md`, the canvas variables via
@@ -29,6 +29,28 @@ not, phase 1 writes the spec itself.
 when there is no `design/brand.md` *and* the user supplied no brand — including
 in a project that already has research, direction, and screens. If a brand
 exists in either form, it is loaded as a constraint and the phase is skipped.
+
+## The Targets contract
+
+`design/product-spec.md` carries a **Targets** table — declared viewports
+(desktop, mobile, or both) and themes (light, dark, or both), each with a primary
+named. `/prototypen:discover` always asks for both in its first round; when it
+has not run, phase 1 decides and records the decision.
+
+**No phase may narrow that table.** Phase 4 declares a density and grid per
+viewport and a palette per theme, phase 6 writes themed variables, phase 7 builds
+a screen set per viewport, and phase 8 checks contrast in each theme separately.
+
+The cost is kept linear rather than combinatorial by treating the two axes
+differently:
+
+| Axis | Handling | Why |
+|---|---|---|
+| **Viewport** | duplicated screen sets, split by region | a desktop table and a mobile card list are different designs, not one design at two widths |
+| **Theme** | themed variables, one screen set, plus a small `Theme Check` set | pen.dev variables theme natively, so one screen renders in every theme — provided no color is ever a literal |
+
+Primary viewport is built and audited **first**; the second is derived from a
+design that has already been judged, so a failed audit throws away half as much.
 
 ## Phase 1 — Intake *(skipped when discovery has run)*
 

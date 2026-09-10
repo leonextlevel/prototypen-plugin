@@ -5,6 +5,15 @@
 > language** when instantiating, and write all content in the user's language.
 > This file is the constraint every later phase is audited against.
 
+## Targets carried from the product spec
+<Copied from design/product-spec.md — the viewports and themes this direction
+must satisfy. Every item below is specified for all of them.>
+
+| | Targets | Primary |
+|---|---|---|
+| **Viewport** | | |
+| **Theme** | | |
+
 ## Axes
 <The two divergence axes chosen for this project, and why these two — what
 tension in this product actually lives on them.>
@@ -16,9 +25,9 @@ tension in this product actually lives on them.>
 - **Position on the axes:** <Where on each of the two axes.>
 - **Type pairing:** <Two named families, what each is for, why they pair.>
 - **Modular scale:** <Ratio (e.g. 1.25 major third), base size, resulting steps.>
-- **Palette:** <The concept first, then the colors derived from it, including named neutrals and intended value distribution.>
-- **Density:** <Base spacing unit, derived scale, how much a primary view holds.>
-- **Grid:** <Columns, gutters, max widths, breakpoints that matter.>
+- **Palette:** <The concept first, then the colors derived from it, including named neutrals and intended value distribution. **One value per declared theme** — a dark theme is a designed palette, not an inverted light one. State the contrast pairs that must hold in each.>
+- **Density:** <Base spacing unit, derived scale, how much a primary view holds — **per declared viewport**, since density is the main thing that differs between them.>
+- **Grid:** <Columns, gutters, max widths, breakpoints that matter — **per declared viewport**.>
 - **Edge treatment:** <Radius and where it varies, border weight and use, what carries depth.>
 - **Motion:** <What moves, how fast, what easing, what deliberately does not.>
 - **Rejects:** <The trade-off this direction accepts.>

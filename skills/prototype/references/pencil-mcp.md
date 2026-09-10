@@ -18,7 +18,7 @@ guessing.
   `.pen` file.** The MCP tools are the only way in.
 - When the `pencil` server is declared in a project-scoped `.mcp.json`, Claude
   Code asks for per-server approval before the tools become available. This
-  plugin does not ship an `.mcp.json`; see the README.
+  plugin does not ship an `.mcp.json`; see `docs/development.md`.
 
 ## The four tools
 
