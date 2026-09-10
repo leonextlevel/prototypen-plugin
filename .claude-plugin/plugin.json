@@ -2,8 +2,8 @@
   "name": "prototypen",
   "description": "Autonomous product prototyping on the Pencil (pen.dev) canvas: turns an idea plus requirements into a navigable prototype, a complete design system, and the design documents that hand off to implementation — with an anti-generic constraint pass that runs before generation, not after.",
   "author": {
-    "name": "Leandro Lopes",
-    "email": "leandrolopessjc15@gmail.com"
+    "name": "Leandro Bueno",
+    "email": "leandrobueno.dev@gmail.com"
   },
   "license": "MIT",
   "keywords": [

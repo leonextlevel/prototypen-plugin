@@ -18,6 +18,43 @@ project's presentation; this is the operational detail behind it.
 3. **A git repository** in the project being designed. The pipeline commits
    after every phase, and that is what makes phase rollback possible.
 
+## Installing
+
+The repository doubles as a **single-plugin marketplace**:
+`.claude-plugin/marketplace.json` declares one entry whose `source` is `"./"`,
+the repo root. This is what the VS Code extension and `claude plugin install`
+look for — without it, either will report that no marketplace manifest exists.
+
+```bash
+claude plugin marketplace add ./prototypen-plugin   # a path, owner/repo, or https URL
+claude plugin install prototypen@prototypen
+```
+
+The path form must look like a path — `./prototypen-plugin` or an absolute path.
+A bare `.` is rejected. Once pushed to GitHub, `claude plugin marketplace add
+<owner>/<repo>` works from anywhere and is the form to give other people.
+
+Verify with `claude plugin list`. The installed version reads as a commit SHA:
+
+```
+❯ prototypen@prototypen
+  Version: 7ce29d3ac88b
+```
+
+That is the intended behavior of omitting `version` — see Validating, below.
+`claude plugin update prototypen@prototypen` pulls the newer commit.
+
+**Both manifests validate independently:**
+
+```bash
+claude plugin validate .                              # marketplace + the plugin it points to
+claude plugin validate .claude-plugin/marketplace.json
+```
+
+Note that `marketplace.json` is the **one other file** that legitimately lives in
+`.claude-plugin/`. The rule is that *components* — `skills/`, `agents/`,
+`hooks/`, `.mcp.json` — stay at the plugin root; the two manifests do not.
+
 ## Loading during development
 
 ```bash
@@ -59,7 +96,9 @@ claude plugin validate .
 
 That warning is the intended state — the plugin defines no `version`, so the
 version is derived from the commit SHA, which is the right mode while it changes
-daily. `--strict` promotes warnings to errors and therefore fails by design.
+daily. **This holds under marketplace install too**: an installed copy reports
+its SHA as the version and `claude plugin update` pulls the newer commit, so
+nothing about publishing forces a semver. `--strict` promotes warnings to errors and therefore fails by design.
 Do not "fix" it by adding a version; see [decisions.md](decisions.md) for when a
 real semver becomes appropriate. **If a second warning ever appears, that one is
 real.**
@@ -67,7 +106,9 @@ real.**
 ## Repository layout
 
 ```
-.claude-plugin/plugin.json   the manifest — the only file that belongs in here
+.claude-plugin/
+  plugin.json                the plugin manifest
+  marketplace.json           single-plugin marketplace, so the repo installs directly
 skills/
   discover/SKILL.md          optional interactive intake — the only step that asks
   prototype/SKILL.md         the pipeline: phases, delegation, commits, limits
@@ -84,7 +125,8 @@ From the Claude Code plugin reference. Breaking one produces a plugin that works
 today via `--plugin-dir` and breaks on marketplace install — a failure mode that
 does not show up in local testing.
 
-1. **Only `plugin.json` lives inside `.claude-plugin/`.** `skills/`, `agents/`,
+1. **Only manifests live inside `.claude-plugin/`** — `plugin.json` and, for a
+   repo that is also a marketplace, `marketplace.json`. `skills/`, `agents/`,
    `hooks/`, and `.mcp.json` live at the plugin root.
 2. **Every SKILL.md has `name` in its frontmatter.** Without it, Claude Code
    falls back to the installation directory name — which for a marketplace

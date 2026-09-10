@@ -1,0 +1,20 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "prototypen",
+  "description": "Single-plugin marketplace for prototypen — autonomous product prototyping on the Pencil (pen.dev) canvas.",
+  "owner": {
+    "name": "Leandro Bueno",
+    "email": "leandrobueno.dev@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "prototypen",
+      "description": "Autonomous product prototyping on the Pencil (pen.dev) canvas: turns an idea plus requirements into a navigable prototype, a complete design system, and the design documents that hand off to implementation — with an anti-generic constraint pass that runs before generation, not after.",
+      "source": "./",
+      "category": "design",
+      "author": {
+        "name": "Leandro Bueno"
+      }
+    }
+  ]
+}

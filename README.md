@@ -132,6 +132,13 @@ Pré-requisitos: pen.dev rodando com um arquivo `.pen` aberto, o servidor MCP
 `pencil` conectado, e o projeto alvo sendo um repositório git.
 
 ```bash
+claude plugin marketplace add ./prototypen-plugin
+claude plugin install prototypen@prototypen
+```
+
+Ou, para desenvolver o próprio plugin sem instalar:
+
+```bash
 cd ~/projetos/meu-produto
 claude --plugin-dir /caminho/para/prototypen-plugin
 ```

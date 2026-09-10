@@ -347,3 +347,56 @@ documentation and is reachable from the README's table.
 **Structural rules and validation now live in one place.** They were duplicated
 between `contributing.md` and the new `development.md`; `contributing.md` now
 points at it rather than restating it, so the two cannot drift apart.
+
+---
+
+## 2026-09-09 — The repository is its own single-plugin marketplace
+
+**Decided:** added `.claude-plugin/marketplace.json` declaring one plugin whose
+`source` is `"./"` — the repo root.
+
+**Why:** installing through the VS Code extension, or through
+`claude plugin install`, requires a marketplace manifest; without one both report
+that none exists. A separate marketplace repository would be the right shape for
+publishing several plugins, and is overhead for one. The single-plugin
+marketplace is the standard pattern for this case, and the official marketplace
+uses the same plain-string relative `source` form (`"./plugins/<name>"`) for the
+plugins it hosts in-repo.
+
+**This does not violate the "only `plugin.json` in `.claude-plugin/`" rule.**
+That rule exists to keep *components* — `skills/`, `agents/`, `hooks/`,
+`.mcp.json` — at the plugin root, where the loader expects them. `marketplace.json`
+is the other manifest, and `.claude-plugin/` is exactly where it belongs; the
+official marketplace ships it at that path.
+
+**No `version` was added, and none is needed.** This was the trigger condition
+recorded earlier for reconsidering the no-version decision, so it was tested
+rather than assumed: installed from the marketplace, the plugin reports
+`Version: 7ce29d3ac88b` — the commit SHA — and `claude plugin update` pulls newer
+commits. Publishing does not force a semver. A real version becomes worthwhile
+when someone needs to *pin* one, or when `claude plugin tag` is used to cut
+releases; until then the SHA is more informative than a stale `0.1.0`.
+
+**Verified end to end** rather than by inspection: marketplace added, plugin
+installed at user scope, and a session with no `--plugin-dir` resolved all six
+components (`prototypen:discover`, `prototypen:prototype`, and the four agents).
+That last check also confirms structural rule 2 holds under marketplace install —
+both skills carry `name` in their frontmatter, so neither falls back to the cache
+directory name.
+
+---
+
+## 2026-09-09 — Author name corrected to the repository's git identity
+
+**Decided:** `plugin.json` and `marketplace.json` name **Leandro Bueno**.
+
+**Why:** the initial `plugin.json` took the author name from the session's
+account identity, which did not match the repository's configured git user
+(`Leandro Bueno <leandrobueno.dev@gmail.com>`). The four commits made while
+building the plugin were also authored under the mismatched name, because the
+commit commands passed an explicit `-c user.name`, overriding the repo's own
+configuration. Later commits use the configured identity.
+
+**Left alone:** the author on those four existing commits. Rewriting history is
+the repository owner's call, and the repo has not been pushed, so `git rebase`
+or `git filter-branch` remains available if the mismatch matters.
