@@ -598,3 +598,51 @@ the walk happens at intake, before anything is drawn.
 **The catalog says which; the direction says how.** Explicitly: it is not a
 mandate to use everything, and it does not override the direction's visual
 decisions. A modal is still a modal in every direction.
+
+---
+
+## 2026-09-11 — Content first, navigation after; screens are content-height; no safe-area bands
+
+**Decided:** three linked changes to how a screen is built, all from the same
+observed defect.
+
+1. **Navigation is placed after content, not before.** The system is still
+   decided once in the direction file and its components are still built in
+   phase 6 — nothing about *what* the navigation is changes. What changes is the
+   order on a screen: build every section, row and state first, then instance
+   the navigation component, with bottom navigation at the bottom of the frame
+   wherever the content ends.
+2. **Screen frames are viewport-width and `fit_content` in height — never a
+   device height, never clipped.** A tall screen is correct.
+3. **No safe-area bands.** Status bar, notch, dynamic island and home indicator
+   are not drawn; the handoff spec tells the implementer to apply platform
+   insets.
+
+**The defect that prompted it:** with "navigation first" as the rule, the agent
+sized the screen frame to a phone, pinned the tab bar to the bottom, and cut off
+the content that no longer fit. The result looked like a device and showed a
+third of the screen. `clip: true` — which pen.dev's own guide suggests for screen
+frames, and which `canvas-structure.md` had adopted — made the cut silent.
+
+**Why all-content-visible is the governing principle:** the prototype is not a
+device mockup. It is the specification the implementing agents read, and the
+complete picture the user gets of what each screen holds. Content hidden below a
+fold or behind a clip is content that will not be built and cannot be reviewed.
+Scrolling is an implementation behavior — the implementer decides what scrolls,
+the prototype shows what exists. A screen that is genuinely enormous is itself
+information: it usually means the spec is asking one screen to do two jobs.
+
+**Why safe areas go:** in a prototype they produce an empty band at the top and
+another at the bottom of every mobile screen, communicating nothing and hiding
+the real edge-spacing decision behind a fake one. They are a platform concern
+with a platform mechanism, and the handoff names any element that must stay
+clear of the home indicator so the implementer applies it. The *designed* insets
+— sides, padding under the app bar — stay; the device chrome does not.
+
+**Deviation from pen.dev's guide, recorded:** `clip: true` on screen frames is
+not used. Horizontal overflow remains a defect and `ctx.problems` still catches
+it; the visitor works on unclipped frames too.
+
+**Rubric:** 3.13 no longer mentions safe areas; new 3.20 (all content visible,
+content-height, nothing displaced by navigation) and 3.21 (no safe-area bands).
+The handoff template gained the two implementer notes.

@@ -16,15 +16,62 @@ not the first place it appears.
 
 ---
 
-## 1. Navigation is designed first, per viewport
+## 1. Navigation: decided early, built as components, placed after content
 
-**Before placing a single element on the first screen of a flow, decide the
-navigation system.** Not the visual treatment — the structure: how a user knows
-where they are, how they get to every primary destination, and how they go back.
+The navigation **system** is decided once, in `design/design-direction.md`, per
+viewport — the structure: how a user knows where they are, how they get to every
+primary destination, how they go back. Its **components** (tab bar, sidebar, app
+bar, breadcrumb) are built in phase 6 with the rest of the system. If the
+direction never declared a system, stop and report; navigation invented per
+screen produces a prototype where each screen disagrees with the last about
+where things live.
 
-`design/design-direction.md` declares this per viewport. If it does not, stop and
-report — navigation invented per screen produces a prototype where each screen
-disagrees with the last about where things live.
+On a screen, though, **content comes first and navigation is placed after it.**
+Build the screen's actual content — every section, every row, every state the
+spec lists — and only then instance the navigation component the direction
+calls for. This order is deliberate, because the opposite order produces a
+specific and common defect: the screen frame gets sized to a device height, a
+tab bar is pinned to the bottom, and the content that no longer fits is cut off
+to make room. That prototype looks like a phone and shows a third of the screen.
+
+### The screen shows all of its content — always
+
+**A screen frame is as tall as its content.** Width is fixed to the declared
+viewport; height is `fit_content`, never a device height. A long list screen is
+tall. A settings screen with forty rows is very tall. That is correct.
+
+The prototype is not a device mockup; it is the **specification the
+implementing agents read** and the complete picture the user gets of what each
+screen holds. Content hidden below a fold, cut by a clip, or replaced by "…" is
+content that will not be built and cannot be reviewed. Scrolling is an
+implementation behavior — the implementer decides what scrolls; the prototype
+shows what exists.
+
+So:
+
+- Never clip a screen to a device height to make it "look right".
+- Never drop rows, sections or states to fit.
+- Bottom navigation goes **after** the content, at the bottom of the frame —
+  wherever that ends up. It does not float over content, and content does not
+  get cut to reach it.
+- If a screen is genuinely enormous, that is information: it usually means the
+  spec is asking one screen to do two jobs, and the fix is in the spec, not the
+  clip.
+
+### No safe-area bands in the prototype
+
+**Do not reserve space for the status bar, notch, dynamic island or home
+indicator.** Those are implementation concerns — the implementer applies safe
+insets from the platform, and the handoff spec says so. In a prototype they
+produce an odd empty band at the top and another at the bottom of every mobile
+screen, communicating nothing and hiding the real edge spacing decision behind a
+fake one.
+
+A mobile screen frame starts at its first real element (the app bar, the first
+content) and ends at its last (the tab bar, or the last content row). Edge
+*insets* — the 16–20 that keeps content off the left and right sides, the top
+padding under the app bar — are design decisions and stay; the *device chrome*
+is not.
 
 ### Choosing the system
 
@@ -99,9 +146,9 @@ a card, a modal, a table cell, a button — all of them.
 The direction file may set different numbers; these are the fallback shape when
 it does not, not a substitute for it.
 
-**Mobile safe areas are not optional.** Content clears the status bar, the notch
-or dynamic island, and the home indicator. A bottom-anchored primary button sits
-*above* the home indicator, not under it.
+**Safe areas are not drawn.** Status bar, notch and home indicator are
+implementation concerns (section 1). The prototype's edge insets are the
+designed ones — sides, and the padding under the app bar — not device chrome.
 
 ### Proximity carries grouping
 
@@ -283,7 +330,8 @@ and go through this list in order:
 |---|---|
 | **Misalignment** | An edge that almost lines up; a row where one item sits higher |
 | **Overlap or crowding** | Anything touching, anything the eye cannot separate |
-| **Edge contact** | Content against a container boundary; a button under the home indicator |
+| **Edge contact** | Content against a container boundary; an empty device-chrome band at the top or bottom that should not be there |
+| **Cut content** | A screen sized to a device height with content clipped or dropped; a bottom nav that displaced content instead of following it |
 | **Wrong color** | A literal that slipped through; a token used for the wrong role — body text in the secondary color, a badge in the brand accent |
 | **Contrast** | Text you have to squint at — especially secondary text, placeholder text, and anything on a tinted surface |
 | **Text problems** | Overflow, unintended truncation, a wrap that orphans one word, a label in the wrong language |
@@ -299,8 +347,10 @@ an honest open item is a gift to the auditor, a silent one is a wasted cycle.
 **4. Then the checklist.** It is short because the two passes above did most of
 it:
 
-- [ ] Navigation present and identical to the flow's other screens; current
-      location visible; back available.
+- [ ] Navigation present, placed after the content, identical to the flow's
+      other screens; current location visible; back available.
+- [ ] Every row, section and state the spec lists is visible — the frame is
+      content-height, nothing was clipped or dropped to fit a device size.
 - [ ] Every state from the spec exists as a named variant.
 - [ ] Every action from the "forgotten actions" list in `component-catalog.md`
       that applies is present; every destructive one is behind a modal.

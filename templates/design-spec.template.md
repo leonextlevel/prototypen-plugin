@@ -60,6 +60,16 @@ implementation needs. Include the canvas node name so it can be found.>
 |---|---|---|---|---|---|
 
 ## Rules the canvas cannot show
+- **Screens are content-height, not device-height.** Every screen frame shows
+  all of its content; nothing scrolls in the prototype. <State per screen, or
+  as a general rule, what scrolls in implementation and what stays fixed —
+  typically the app bar and bottom navigation are fixed and the content region
+  scrolls.>
+- **Safe areas are not drawn.** <State that the implementer applies platform
+  safe insets — status bar, notch, dynamic island, home indicator — and that
+  the prototype's edge insets are the designed ones on top of those. Name any
+  element that must stay clear of the home indicator, e.g. a bottom tab bar or
+  a sticky primary button.>
 - **Focus order:** <Per screen where it is not obvious.>
 - **Responsive behavior:** <What reflows, what collapses, what hides, at which breakpoints.>
 - **Motion:** <What animates, duration, easing, and what must not animate.>

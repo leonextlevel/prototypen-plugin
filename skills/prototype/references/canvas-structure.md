@@ -113,8 +113,11 @@ direction (left to right, wrapping down) and a **constant gap between screens**.
 Same gap in every flow region. A screen out of order is an audit failure, not a
 detail — order is what makes the region readable as a flow instead of a pile.
 
-Screen frames carry `clip: true` so overflowing content is visible as a problem
-rather than silently spilling across the canvas.
+Screen frames are **fixed to the viewport width and `fit_content` in height**,
+so they grow with their content and every row, section and state is visible.
+Never a device height: a frame sized to a phone with `clip` on it is how content
+gets silently cut to fit a tab bar, and cut content is content the implementer
+never sees. Horizontal overflow is still a defect — `ctx.problems` catches it.
 
 ## Naming
 

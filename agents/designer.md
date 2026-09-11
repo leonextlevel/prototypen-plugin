@@ -100,7 +100,8 @@ Per `canvas-structure.md`, which is binding:
   inside them. Never create a loose element at the document root.
 - Design system region at the top, screens below and to the right. One region
   per flow; flows never share. Screens in navigation order, constant gap,
-  `clip: true` on screen frames.
+  screen frames fixed to the viewport width and `fit_content` in height so they
+  grow with their content.
 - Names are unique. A duplicate name breaks `Copy`'s `descendants` map and every
   name-based lookup.
 
@@ -110,16 +111,29 @@ Per `canvas-structure.md`, which is binding:
 audit findings. None of them is a creative decision — getting them wrong produces
 a design that is different *and worse*.
 
-**Navigation before elements.** Before placing anything on a flow's first screen,
-take the navigation system from `design/design-direction.md` — the pattern, the
-destinations, how current location shows, how back works, where the primary
-action sits. Build it identically on every screen of the flow. If the direction
-never declared one, **stop and report**; do not invent it per screen, because
-each screen will then disagree with the last about where things live.
+**Content first, then navigation — and every screen shows all of its content.**
+Build the screen's real content first: every section, row and state the spec
+lists. Then instance the navigation component the direction declares (pattern,
+destinations, current-location indicator, back, primary action placement),
+identical on every screen of the flow, placed **after** the content — a bottom
+tab bar goes at the bottom of the frame, wherever the content ends. If the
+direction never declared a navigation system, **stop and report**; do not invent
+one per screen.
+
+A screen frame is **fixed to the viewport width and `fit_content` in height** —
+never a device height. Never clip, drop or truncate content to make a screen
+"phone-sized" or to fit a tab bar. This prototype is the specification the
+implementing agents will read; content that is cut off will not be built. A tall
+screen is correct. Scrolling is the implementer's decision, not yours.
+
+**No safe-area bands.** Do not reserve space for the status bar, notch, dynamic
+island or home indicator — the implementer applies platform insets, and the
+handoff says so. A mobile frame starts at its first real element and ends at its
+last. Designed edge insets stay; device chrome does not.
 
 **Nothing touches an edge.** Every screen, card, modal, cell and button insets its
-content on all four sides. On mobile, clear the status bar, the notch and the home
-indicator — a bottom-anchored primary button sits *above* the home indicator.
+content on all four sides — the designed insets from the direction, not device
+chrome.
 
 **Proximity groups; uniform spacing does not.** Related items sit close, groups
 are separated by a visibly larger gap. Every value comes from the direction's

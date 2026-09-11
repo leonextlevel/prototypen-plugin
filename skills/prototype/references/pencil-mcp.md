@@ -216,6 +216,10 @@ confirmed, the user creates and opens the file.
 - Flexbox is single-axis with **no wrapping**. Grids are built as explicit row
   frames.
 - There is no scrolling. All content must be visible; resize frames to fit.
+  This plugin takes that literally for screens: **viewport width, `fit_content`
+  height, never a device height.** pen.dev's own guide suggests `clip: true` on
+  screen frames; this plugin does not use it, because a clipped screen is how
+  content gets silently cut to fit a tab bar. See `canvas-structure.md`.
 - Any new, copied, or modified root frame carries `placeholder: true` for the
   duration of work on it, cleared as soon as that frame is done.
 - Use `FindEmptySpace` to place root-level frames; never pick random

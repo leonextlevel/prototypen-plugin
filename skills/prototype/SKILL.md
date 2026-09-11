@@ -289,10 +289,17 @@ destructive state) in the design-system region.
 Screens go inside their flow's box in navigation order.
 
 Each designer reads `references/screen-craft.md` first — the baseline of
-established practice, and the source of audit criteria 3.12–3.16. Building the
-navigation system before any element, insetting content from every container
-edge, grouping by proximity instead of spacing uniformly, and holding one
-alignment edge are what most findings would otherwise be about. Handing the
+established practice, and the source of audit criteria 3.12–3.16. Building content
+first and placing navigation after it, keeping every screen content-height so
+nothing is cut to fit a device, insetting content from every container edge,
+grouping by proximity instead of spacing uniformly, and holding one alignment
+edge are what most findings would otherwise be about.
+
+**Every screen shows all of its content.** Frames are viewport-width and
+`fit_content` in height — never a device height, never clipped. The prototype is
+what the implementing agents will read; what is cut off will not be built. And
+**no safe-area bands**: status bar, notch and home indicator are the
+implementer's, and the handoff says so. Handing the
 designer that standard up front is cheaper than discovering it in the audit.
 
 **Every screen is self-reviewed before it is reported done, and every flow
