@@ -204,6 +204,23 @@ user's language. Screens go in navigation order with a constant gap.
 Parallelism is per-flow because flows are the natural isolation boundary — they
 never share a region, so two designers cannot collide.
 
+## Phase 7b — Layout review
+
+| | |
+|---|---|
+| **In** | A finished flow, `references/layout.md`, the direction's alignment posture and spacing rules |
+| **Out** | Geometry fixed in place; open items as change requests |
+| **By** | `prototypen:layout-reviewer`, **in a fresh context**, per flow |
+
+States each screen's composition intent from its archetype, checks it with
+`ctx.bounds` — left edges, center axis, gaps, widths, dead space, row heights —
+before any screenshot, fixes what is mechanical (a parent's `alignItems`, a
+`gap`, a sizing mode, never a nudged `x`), and reports what is not as a change
+request. Runs again after any audit fix that touched layout.
+
+Cheap and narrow by design. It does not judge; it verifies that centered is
+centered, one edge is one edge, and equal is equal.
+
 ## Phase 8 — Audit
 
 | | |
@@ -216,7 +233,10 @@ Four levels, in order: structural (no screenshot), canvas organization (no
 screenshot), visual (screenshot), completeness. Binary PASS/FAIL, every FAIL
 naming the node and the fix.
 
-Failures go back to a `prototypen:designer`. **At most 3 fix cycles per screen**
+Every FAIL is classified. `execution` failures go back to a `prototypen:designer`;
+`direction` and `spec` failures go to the orchestrator as change requests (see
+Changes, below) and do not count against the screen. **At most 3 fix cycles per
+screen**
 at the visual level — past three it oscillates rather than converges. On the
 third failure the finding is written down as unresolved and the run moves on.
 Levels 1, 2, and 4 are objective, converge, and are fixed until they pass.
@@ -259,6 +279,18 @@ component with variants, states, props, and the behavior the canvas cannot show.
 The screen inventory with flows and built states. Focus order, responsive
 behavior, motion, copy tone, accessibility decisions. And the **open findings**
 carried over from the audit — what failed three cycles and needs a human.
+
+## Changes during the run
+
+Any agent can raise a change; only the skill decides. Three kinds — **add** a
+missing definition, **amend** a direction decision, **extend** the scope — each
+with an owning artifact, a propagation order (spec → direction → variables →
+system region → screens → re-review), a commit, and an entry in
+`design/changes.md`. Amendments are dated entries at the end of the direction
+file, never edits to the original; a second amendment to the same area in one
+round means the phase-4 decision was wrong and the answer is `git reset` to
+that phase, not a third patch. Full procedure in
+`skills/prototype/references/change-protocol.md`.
 
 ## Commit points
 
@@ -303,10 +335,13 @@ afterward, and the cost of unwinding it grows with each subsequent phase.
    6 System                            │
         └──────────────┬───────────────┘
                        │
-                  7 Screens  (parallel, one per flow)
+                  7 Screens  (parallel, one per flow; self-review per screen)
                        │
-                  8 Audit ──► fix ──┐ max 3 cycles per screen
-                       │◄───────────┘
+                 7b Layout review  (per flow, fresh context, geometry first)
+                       │
+                  8 Audit ──► [execution] ──► fix ──┐ max 3 cycles per screen
+                       │◄───────────────────────────┘
+                       ├──► [direction] / [spec] ──► change request ──► amend, propagate, log, commit
                   9 Organization review  (always)
                        │
                  10 Handoff

@@ -37,9 +37,15 @@ skill needs a seam that real. A new *phase* of the pipeline is not one; that goe
 in `prototype`'s body or a reference file.
 
 Another agent adds a context, a handoff, and a place for instructions to
-contradict each other. It does not add judgment. Four agents cover the four
-genuinely different jobs — find out what is true, decide what the brand is,
-execute a decision, judge a result. A fifth would overlap one of them.
+contradict each other. It does not add judgment by itself. **The test for a new
+agent is a different input and a different question** — not a different
+failure mode. The five agents pass it: the researcher (the world → what is
+true), the brand designer (occupied territory → where to stand), the designer
+(the direction → how to realize it), the layout reviewer (geometry plus intent
+→ does the arrangement do what it claims), the auditor (direction plus screen →
+do they match). A "typography reviewer" would fail it: same input as the
+auditor, a subset of its question. Splitting the designer by phase would fail
+it: same input, same question, one more handoff.
 
 The same applies to the skill body. If you are about to add fifteen lines of
 detail to `SKILL.md`, they belong in a reference file with a pointer from the

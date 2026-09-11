@@ -646,3 +646,97 @@ it; the visitor works on unclipped frames too.
 **Rubric:** 3.13 no longer mentions safe areas; new 3.20 (all content visible,
 content-height, nothing displaced by navigation) and 3.21 (no safe-area bands).
 The handoff template gained the two implementer notes.
+
+---
+
+## 2026-09-11 — A fifth agent, `layout-reviewer`, and the rule that admits it
+
+**Decided:** added `agents/layout-reviewer.md` (sonnet, fresh context, per
+flow, between the designer's self-review and the audit, and again after audit
+fixes that touch layout) and `references/layout.md`, extracted from
+`screen-craft.md` and extended with composition intent per screen archetype,
+space usage, distribution, the numeric method, and the partial-alignment
+failure catalog. The reviewer may fix mechanical geometry in place; it may not
+restructure, judge, or touch color, type, copy or components.
+
+**The observed failure:** screens that should be centered came out left-ranged,
+or centered in the heading only; forms with three field widths; content hugging
+one side of a wide screen. These are the defects a viewer feels instantly and
+cannot name — and they were surviving because the designer's self-review is in
+the generating context, and the auditor's attention, at opus with ~45 criteria,
+is on judgment. A 3px partial alignment does not compete with "does this match
+the direction's personality sentence".
+
+**The rule, made precise rather than broken:** `contributing.md` said a generic
+design that got past the audit becomes a rubric line, not a subagent, and that a
+fifth agent would overlap one of the four. Both were slightly wrong as stated.
+The real test is **a different input and a different question**. The layout
+reviewer's input is geometry plus the screen's composition intent; its question
+is whether the arrangement does what it claims. It needs two items from the
+direction file and nothing else from the constraint set. That is not a subset of
+the auditor's job; it is a job the auditor is badly shaped for. The rule now
+says this, and it also says what still fails the test: a "typography reviewer"
+(same input as the auditor, a subset of its question) and splitting the designer
+by phase (same input, same question, one more handoff) — which was explicitly
+considered and rejected.
+
+**Why it fixes rather than only reports:** its fixes are geometric and
+verifiable by the same bounds check that found them — a parent's `alignItems`,
+a `gap`, a sizing mode. Routing "set `alignItems: center`" through the designer
+costs a full context for no added judgment. The auditor does not fix because
+its findings are judgments; the layout reviewer fixes because its findings are
+measurements. It is told to fix the cause, never nudge `x`, and to escalate
+anything that needs structure, content, or a decision about intent.
+
+**Why `layout.md` is its own file:** the discipline is checkable by numbers, the
+reviewer needs exactly this and nothing else from the craft set, and
+`screen-craft.md` at 381 lines was carrying two subjects. Screen-craft keeps
+what a screen must contain; layout keeps how it is arranged.
+
+---
+
+## 2026-09-11 — A change protocol: agents raise, the skill decides, nothing is edited in place
+
+**Decided:** `references/change-protocol.md`, plus failure classification in
+the audit report (`[FAIL:execution]` / `[FAIL:direction]` / `[FAIL:spec]`), a
+`design/changes.md` log, and a `## Amendments` convention for the direction and
+brand files.
+
+**The gap it fills:** the pipeline declared constraints up front and executed
+within them, and had one escape hatch — the designer stops and reports a
+missing token, the orchestrator "amends the direction". Nothing said how, who
+else could raise what, what happened when the direction itself was wrong rather
+than the execution, how far a change had to propagate, or where the user could
+see what had been decided in a run that never asked them. Meanwhile the audit
+had no way to say "the designer did this right and it is still wrong", so
+direction failures were being sent back as execution failures and burning fix
+cycles on constraints that could not be satisfied.
+
+**Three kinds, because they have three different owners:** *add* (a missing
+definition — derived from what exists, put in the owning artifact), *amend* (a
+direction decision that did not survive the real content — the smallest change
+that resolves it), *extend* (scope the spec did not ask for — added if the
+existing jobs imply it, otherwise written under Out of scope for the user; the
+pipeline does not invent jobs).
+
+**Never edit the original in place.** Amendments are dated entries appended to
+the file. A direction whose history is visible can be audited against; one that
+has been silently rewritten cannot, and the next round would inherit a
+constraint nobody decided.
+
+**The second-amendment rule** is the guard against erosion: the same area of the
+direction amended twice in one round is the signal that the phase-4 decision was
+wrong, not the detail — and the answer is `git reset` to phase 4, not a third
+patch. Two patches on a bad foundation is how a direction file becomes a list of
+exceptions.
+
+**The orchestrator decides, not the user.** This keeps the run unattended. The
+change log is the user's window: one entry per decision — kind, raised by,
+problem, decision, why, propagated to, commit — written so that they can
+disagree with exactly one decision and know exactly what to revert.
+
+**The classification is what makes it work.** `direction` and `spec` failures do
+not count against a screen's three cycles, because they are not the screen's
+fault. The auditor is told the misclassification cost explicitly: a direction
+failure sent to the designer as execution produces three cycles of a designer
+trying to satisfy a constraint that cannot be satisfied.

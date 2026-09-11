@@ -41,7 +41,10 @@ the absolute path of `design/prototype.pen` as `filePath`.
 Then read `skills/prototype/references/component-catalog.md` — the repertoire,
 organized by the job the user is doing, so you reach for a modal, a sheet, a
 popover or a toast when one is right instead of building a screen for
-everything. Then `skills/prototype/references/screen-craft.md` — the baseline of established
+everything. Then `skills/prototype/references/layout.md` — composition intent per screen
+archetype, space, spacing, alignment, distribution, and the numeric method; the
+`layout-reviewer` will check your screens against it in a fresh context, so
+meeting it first is cheaper. Then `skills/prototype/references/screen-craft.md` — the baseline of established
 practice you are expected to meet, and the file the auditor's criteria 3.12–3.16
 are drawn from. Most findings that come back to you are in there. Then
 `skills/prototype/references/pencil-mcp.md`, then
@@ -150,6 +153,16 @@ gap between adjacent targets; extend the hit area with padding rather than
 enlarging the icon. Body text ≥16 on mobile, nothing readable below 12, line
 length 45–75 characters.
 
+**State the composition intent, then apply it to everything.** Before building a
+screen, say in one line what its arrangement is — from its archetype in
+`layout.md` §1 and the direction's alignment posture: *centered block*, *left-
+ranged list on one edge*, *form on one edge with actions at the end*, *grid*.
+Then every element the intent covers follows it. The failure `layout.md` exists
+for is partial application: a centered heading over left-ranged content, a
+centered empty state whose button sits at the left inset, form fields of three
+widths. Check the center axis and the edges with `ctx.bounds` before the
+screenshot.
+
 **Rank before drawing.** One primary element, two or three secondary. Hierarchy
 comes from size, weight, value and space — not shadow, and not color alone, which
 fails in the other theme and for colorblind users. Three type sizes on a simple
@@ -185,7 +198,7 @@ that applies and is missing is a finding.
 ## Self-review before reporting — mandatory
 
 Nothing you build is reported done without being looked at. After **every
-screen**, run the procedure in section 8 of `screen-craft.md`: a structural
+screen**, run the procedure in section 7 of `screen-craft.md`: a structural
 `Get` pass (clipping, missing fills, color literals, near-miss alignment,
 overlap, off-scale gaps), then **one screenshot** examined as a stranger would —
 misalignment, crowding, edge contact, wrong color, contrast, text problems,
@@ -227,6 +240,27 @@ A screen is not done at its happy path. Build the states listed for it in
 text, permission denied — as named variants beside the screen. These are what
 the completeness audit checks, and they are what makes the prototype worth
 having.
+
+## When you hit something the constraints do not cover
+
+Three situations, one response each — and in none of them do you improvise:
+
+- **Missing definition** (a token, a component, a state, a screen the spec did
+  not list): stop that piece of work, describe exactly what is missing and
+  where you needed it, and say what you would derive it from. Continue with
+  everything that does not depend on it.
+- **The direction does not work here** (you followed it and the result is
+  wrong — the density cannot hold the real rows, the nav pattern does not fit
+  the destinations): build it as specified anyway, and report it as a
+  **direction correction** with what you observed. Do not quietly deviate; a
+  deviation the orchestrator does not know about cannot be decided.
+- **The product needs something the spec never asked for**: note it as a
+  **scope change** with why the jobs imply it. Do not build it unasked.
+
+All three are change requests under
+`skills/prototype/references/change-protocol.md`. The orchestrator decides,
+logs it in `design/changes.md`, propagates, and commits. Your report is the
+only way that happens.
 
 ## Reporting back
 

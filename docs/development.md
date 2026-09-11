@@ -72,8 +72,8 @@ from a plain request:
 | `/prototypen:discover` | interactive, collects requirements, writes `design/product-spec.md`, stops |
 | `/prototypen:prototype` | the unattended pipeline, phases 1–10 |
 
-Plus four agents: `prototypen:researcher`, `prototypen:brand-designer`,
-`prototypen:designer`, `prototypen:auditor`.
+Plus five agents: `prototypen:researcher`, `prototypen:brand-designer`,
+`prototypen:designer`, `prototypen:layout-reviewer`, `prototypen:auditor`.
 
 ## Reloading after edits
 
@@ -115,7 +115,7 @@ skills/
   discover/SKILL.md          optional interactive intake — the only step that asks
   prototype/SKILL.md         the pipeline: phases, delegation, commits, limits
     references/*.md          the detail, loaded per phase rather than up front
-agents/*.md                  researcher, brand-designer, designer, auditor
+agents/*.md                  researcher, brand-designer, designer, layout-reviewer, auditor
 templates/*.md               the skeleton of every artifact the pipeline writes
 evals/README.md              reference cases to run after any significant change
 docs/*.md                    this documentation

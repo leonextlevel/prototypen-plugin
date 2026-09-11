@@ -142,6 +142,7 @@ screens. If brand assets exist, load them as a constraint and skip the phase.
 | 5 | Canvas structure | named, empty box grid in the `.pen` file, before any element | `prototypen:designer` |
 | 6 | System | tokens as `.pen` file variables, base components | `prototypen:designer` |
 | 7 | Screens | one subagent per flow, in parallel | `prototypen:designer` |
+| 7b | Layout review | composition, alignment, distribution, space — per flow, geometry first | `prototypen:layout-reviewer` |
 | 8 | Audit | `design/audits/<YYYY-MM-DD>.md` + fix loop | `prototypen:auditor` |
 | 9 | Organization review | final canvas sweep, mandatory | `prototypen:auditor` |
 | 10 | Handoff | `design/design-spec.md` mapping tokens and components to code | this skill |
@@ -303,7 +304,7 @@ implementer's, and the handoff says so. Handing the
 designer that standard up front is cheaper than discovering it in the audit.
 
 **Every screen is self-reviewed before it is reported done, and every flow
-after its last screen** — the procedure is section 8 of `screen-craft.md`. This
+after its last screen** — the procedure is section 7 of `screen-craft.md`. This
 is a mechanical pass for the obvious: a `Get` visitor for clipping, missing
 fills, color literals, near-miss alignment and overlap, then one screenshot read
 as a stranger would for crowding, edge contact, wrong color, contrast, text
@@ -317,6 +318,23 @@ ladder — tooltip → popover → menu → toast → sheet → modal → screen
 lightest that holds it. Destructive actions always confirm in a modal; reversible
 ones act immediately and offer Undo.
 
+### 7b — Layout review
+
+After each flow's designer reports done (and after any audit fix that touched
+layout), delegate that flow to `prototypen:layout-reviewer` in a fresh context.
+It reads `references/layout.md` and only the alignment posture and spacing
+rules from the direction, states each screen's composition intent, checks it
+with `ctx.bounds` before any screenshot, **fixes mechanical geometry in place**
+(a parent's `alignItems`, a `gap`, a sizing mode — never a nudged `x`), and
+reports what it could not fix as change requests.
+
+It exists because the defects it targets — a centered screen that is centered
+only in its heading, a form with three field widths, a 3px offset, a column
+hugging one side of a wide screen — are the ones a viewer feels instantly and
+cannot name, and the ones every other reviewer's attention skips past. Cheap,
+narrow, numeric. It does not judge design; anything it has an opinion about
+outside geometry is one line for you and nothing more.
+
 ### 8 — Audit
 
 Read `references/audit-rubric.md`. Delegate to `prototypen:auditor` in a fresh
@@ -324,7 +342,14 @@ context — never let the agent that drew a screen judge it. Self-review in the
 same context approves its own work.
 
 The auditor writes `design/audits/<YYYY-MM-DD>.md` with a binary verdict per
-criterion. Failures come back to a `prototypen:designer` as fixes.
+criterion, and **every FAIL classified**: `execution` (the constraint is right,
+the screen is wrong) goes back to a `prototypen:designer` as a fix;
+`direction` (the designer followed the direction and it is still wrong) and
+`spec` (the product needs something the spec never listed) come to **you** as
+change requests, and do not count against the screen's fix cycles. Handle them
+under "Changes during the run" below before sending anything back to a
+designer — a `direction` failure sent to the designer as `execution` burns three
+cycles on a constraint that cannot be satisfied.
 
 **Attempt limit: at most 3 fix cycles per screen.** Screenshot-based visual
 critique is good at hierarchy and gross error and weak at refinement; past three
@@ -351,6 +376,36 @@ with its variants, states, and props, the screen inventory with its flows, and
 the rules an implementer needs that the canvas cannot show (focus order,
 responsive behavior, motion, copy tone).
 
+## Changes during the run
+
+Read `references/change-protocol.md` the first time any of these happens; it is
+the full procedure. The short form:
+
+Agents **raise**; only you **decide**. Three kinds:
+
+- **Add** — a missing token, component, state or screen. Derive it from what
+  exists (the palette's concept, the catalog, the direction's edge treatment),
+  put it in the owning artifact, propagate down.
+- **Amend** — a direction or brand decision that did not survive the real
+  content. Change the smallest thing that resolves it, in a dated
+  `## Amendments` section at the end of the file — never edit the original in
+  place. **Twice on the same area in one round means the phase-4 decision was
+  wrong: go back to that commit and redo it**, do not patch a third time.
+- **Extend** — something the product needs that the spec did not ask for. If
+  the existing jobs imply it, add it to the spec and build it. If it needs a
+  new job or persona, write it under Out of scope and stop; new jobs are the
+  user's.
+
+Every decision propagates in order — spec → direction → variables → system
+region → screens → re-review and re-audit of what it touched — then commits
+with the change in the message, and gets an entry in **`design/changes.md`**
+(kind, raised by, problem, decision, why, propagated to, commit). That log is
+the user's window into a run that did not stop to ask; every entry should let
+them disagree with one decision and know exactly what to revert.
+
+What is *not* a change: a designer that did not follow the direction (fix the
+screen), a geometry deviation the layout reviewer can fix (fixed), taste.
+
 ## Commit per phase
 
 `.pen` files are JSON, so they diff in git. At the end of every phase, commit —
@@ -372,6 +427,8 @@ Read these when the phase that needs them starts — not up front, not all at on
 | `references/anti-generic.md` | phase 4, phase 6, and every audit |
 | `references/component-catalog.md` | phase 6 (choosing the base set), phase 7 |
 | `references/screen-craft.md` | phases 6 and 7, and every audit fix |
+| `references/layout.md` | phase 7 (designer), phase 7b (layout reviewer) |
+| `references/change-protocol.md` | the first time an agent raises something it cannot do, or the audit returns a `direction`/`spec` failure |
 | `references/canvas-structure.md` | phase 5, and phase 9 always |
 | `references/audit-rubric.md` | phases 8 and 9 |
 | `references/pencil-mcp.md` | before the first Pencil call of the session |

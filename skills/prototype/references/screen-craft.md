@@ -113,89 +113,21 @@ is not.
 
 ---
 
-## 2. Spacing: nothing touches, nothing floats
+## 2. Arrangement lives in `layout.md`
 
-The most common reason a generated screen reads as amateur is spacing — elements
-flush against container edges, unrelated things equidistant from each other, and
-gaps chosen one at a time.
+Composition intent per screen archetype, space usage, spacing and edge insets,
+alignment, distribution, and the numeric method for checking all of it are in
+**`layout.md`**. It is a separate file because it is a separate discipline —
+checked by numbers, reviewed by a dedicated agent, and the source of the defects
+a viewer feels instantly and cannot name. Read it before building any screen.
 
-### The scale
-
-**Every gap, margin and padding is a value from the direction's spacing scale.**
-Not a nearby number. The scale exists so that spacing carries meaning: a reader
-learns that 8 means "same thing" and 32 means "different section", and an
-off-scale 13 destroys that signal without anyone being able to name why.
-
-Most scales are built on a 4 or 8 unit base (4, 8, 12, 16, 24, 32, 48, 64). The
-direction file states which; use it.
-
-### Edge padding — never let content touch a boundary
-
-Every container gives its content breathing room on **all four sides**. A screen,
-a card, a modal, a table cell, a button — all of them.
-
-| Container | Typical inset |
-|---|---|
-| Mobile screen edge | 16–20 |
-| Desktop screen / page gutter | 24–48, more at large widths |
-| Card, panel, modal | 16–24 mobile, 24–32 desktop |
-| Button | 12–16 horizontal, 8–12 vertical, and never less horizontally than vertically |
-| Table / list cell | 12–16 horizontal, 8–12 vertical |
-| Input field | 12–16 horizontal |
-
-The direction file may set different numbers; these are the fallback shape when
-it does not, not a substitute for it.
-
-**Safe areas are not drawn.** Status bar, notch and home indicator are
-implementation concerns (section 1). The prototype's edge insets are the
-designed ones — sides, and the padding under the app bar — not device chrome.
-
-### Proximity carries grouping
-
-Related things sit closer together than unrelated things. This is the cheapest
-hierarchy available and the most often wasted.
-
-- A label and its value: tight (4–8).
-- Items within a group: one step (8–16).
-- Between groups: a clear jump (24–48), enough that the eye reads a boundary
-  without needing a divider.
-- **If everything is equidistant, nothing is grouped.** Uniform gaps between all
-  children of a container is a defect, not neutrality.
-
-Do not reach for a divider line where a larger gap would do. Dividers are for
-where space alone is ambiguous.
-
-### Between interactive elements
-
-Adjacent tappable or clickable targets get **at least 8** between them — more on
-mobile. Two buttons flush against each other produce mis-taps, and a destructive
-action next to a confirm action with no gap is a real hazard, not a cosmetic one.
+The two rules from it that account for the most findings: **nothing touches a
+container edge**, and **an intent applies to every element it covers** — a
+centered screen is centered in full, a left-ranged list shares one edge in full.
 
 ---
 
-## 3. Alignment: pick an edge and commit to it
-
-- **Establish one strong alignment edge per screen** and let most content share
-  it. A screen with four different left edges reads as unresolved.
-- **Body text and labels align left** (in LTR). Centered text is for short
-  display lines only — a headline, an empty-state message of a line or two, a
-  dialog title. **Never center a paragraph**, and never center-align a form.
-- **Numbers align right** in any column that will be compared or summed —
-  currency, quantities, percentages. Tabular figures where the typeface offers
-  them. Text columns stay left.
-- **Column headers align with their data**: a right-aligned number column gets a
-  right-aligned header.
-- **Vertically center items in a row** against each other — an icon against its
-  label, an avatar against a name. Icons often need **optical** centering rather
-  than mathematical: trust the eye, then verify with `ctx.bounds`.
-- **Form labels are consistent**: all above their field, or all to one side. Not
-  mixed within a form.
-- Related controls share a baseline. A button next to an input matches its
-  height, not its top edge only.
-
----
-
-## 4. Target sizes and density
+## 3. Target sizes and density
 
 | | Minimum |
 |---|---|
@@ -217,7 +149,7 @@ Line length: **45–75 characters** for anything paragraph-shaped. Line height
 
 ---
 
-## 5. Hierarchy in practice
+## 4. Hierarchy in practice
 
 - **Rank the screen before drawing it.** One primary element, two or three
   secondary, everything else tertiary. If you cannot name the primary, the screen
@@ -234,7 +166,7 @@ Line length: **45–75 characters** for anything paragraph-shaped. Line height
 
 ---
 
-## 6. Secondary screens the context requires
+## 5. Secondary screens the context requires
 
 The screen inventory in `product-spec.md` covers the flows. Real products need
 more, and these are the ones that get forgotten because nobody lists them as
@@ -270,7 +202,7 @@ screens the context called for and which were built.
 
 ---
 
-## 7. Content that behaves like real content
+## 6. Content that behaves like real content
 
 - Use **realistic content in the user's language** — real-looking names, dates,
   currency, addresses, and lengths for that locale. Lorem ipsum hides every
@@ -285,7 +217,7 @@ screens the context called for and which were built.
 
 ---
 
-## 8. Self-review: after every screen, and after every flow
+## 7. Self-review: after every screen, and after every flow
 
 **Nothing is reported done without being looked at.** The audit in phase 8 is
 for judgment — does this match the direction, is the hierarchy right, does the

@@ -111,6 +111,24 @@ already existed, which means reading them before you judge.
 **Binary. PASS or FAIL.** No scores, no "mostly", no "could be improved". A
 rubric that admits degrees grades everything B+ and nothing gets fixed.
 
+**Every FAIL is classified**, because the fix goes to a different place
+depending on the class, and misclassifying it wastes the three fix cycles a
+screen gets:
+
+| Class | Meaning | Goes to |
+|---|---|---|
+| `[FAIL:execution]` | The designer did not follow the direction, the spec, or the craft baseline. The constraint is right; the screen is wrong. | the designer, as a fix |
+| `[FAIL:direction]` | The designer **did** follow the direction and the result is still wrong — the palette fails AA in dark, the declared density cannot hold the real data, the navigation pattern does not fit the destinations. The constraint is wrong. | the orchestrator, as a change request (`change-protocol.md`) |
+| `[FAIL:spec]` | Something the product needs that `product-spec.md` never listed — a state, a screen, a secondary screen the context requires. | the orchestrator, as a change request |
+
+Before writing `execution`, check that the direction actually says what you
+are holding the screen to. If it does not — if the designer had to guess
+because the direction was silent — that is `direction`, and the finding says
+what the direction needs to declare. Sending a `direction` failure back to the
+designer as `execution` is the single most expensive mistake you can make: it
+produces three cycles of a designer trying to satisfy a constraint that cannot
+be satisfied.
+
 Every FAIL must be actionable: name the node by name and id, say what is wrong,
 say what the correct state is, and say what to do. "Hierarchy is weak" is not a
 finding. "The card title (`03 Payment — Card Title`, id `Xk9f2`) is 16px next to
@@ -132,6 +150,15 @@ seconds what the loop could not decide in three passes.
 
 Levels 1, 2, and 4 are **not** subject to this limit. They are objective, they
 converge, and they get fixed until they pass.
+
+## Layout is reviewed before you
+
+The `layout-reviewer` has already checked composition, alignment, distribution
+and space usage against `layout.md` and fixed what was mechanical. Its report
+is in your task context. Do not re-derive its findings; do check that what it
+marked FIXED is actually fixed (one bounds check), and treat anything it left
+OPEN as a candidate `direction` or `spec` failure — it left it open because the
+fix was not geometric.
 
 ## What you do not do
 

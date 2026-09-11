@@ -19,7 +19,7 @@ sentences.
 skills/discover/SKILL.md         optional interactive intake — the only step that asks
 skills/prototype/SKILL.md        the process — what happens, in what order, and when to stop
   └── references/*.md            the detail — loaded per phase, not up front
-agents/*.md                      four executors, each in its own context
+agents/*.md                      five executors, each in its own context
 templates/*.md                   the shape of every artifact the pipeline writes
 ```
 
@@ -69,7 +69,9 @@ one phase and not at all for the other nine.
 | `brand.md` | when the brand phase runs, what a brand must define, the logo variants |
 | `design-direction.md` | the divergence axes, what a direction must declare, how to choose |
 | `anti-generic.md` | what is banned, and the boundary between visual and interaction |
-| `screen-craft.md` | the craft baseline — navigation, spacing, alignment, targets, secondary screens, and the per-screen self-review |
+| `screen-craft.md` | the craft baseline — navigation, targets, hierarchy, secondary screens, content, and the per-screen self-review |
+| `layout.md` | arrangement — composition intent per archetype, space, spacing, alignment, distribution, and the numeric method |
+| `change-protocol.md` | who may raise a change, who decides, the three kinds, propagation, the log |
 | `component-catalog.md` | the repertoire by job — which component for which behavior, the screen-vs-overlay decision, the destructive-action rule, the forgotten actions |
 | `canvas-structure.md` | how the Pencil document is organized and audited |
 | `audit-rubric.md` | every pass/fail criterion, at four levels |
@@ -98,14 +100,41 @@ the designer reads it before drawing rather than meeting it for the first time i
 a finding. A standard handed over up front is far cheaper than the same standard
 discovered through three fix cycles.
 
-### Two review layers, and why the cheap one does not undermine the isolated one
+### Why a fifth agent, when the rule says "rubric line, not subagent"
+
+The rule in `contributing.md` is that a generic design which got past the audit
+becomes a criterion, not an agent. The `layout-reviewer` is not an exception to
+that rule; it is what the rule was always meant to protect — and stating the
+rule more precisely shows why.
+
+A new agent is justified when it has a **different input and a different
+question**, not merely a different failure mode. The four original agents split
+on exactly that: the researcher's input is the world and its question is what
+is true; the brand designer's input is the occupied territory and its question
+is where to stand; the designer's input is the direction and its question is
+how to realize it; the auditor's input is the direction plus the screen and its
+question is whether they match.
+
+The layout reviewer's input is **geometry plus the screen's composition
+intent**, and its question is **whether the arrangement does what it claims** —
+centered means centered, one edge means one edge, equal means equal. It needs
+no direction file beyond two items, no brand, no ban list. It is cheap
+(sonnet), narrow, and numeric first. Folding that into the auditor would put a
+3px partial-alignment check inside a 45-criterion opus judgment pass, where it
+was in fact getting lost — the observed failure that prompted the agent.
+
+By contrast, *splitting the designer* into a system-builder and a screen-builder
+would not pass the test: same input (direction and tokens), same question (how
+to realize it on the canvas). It would add a handoff and no judgment.
+
+### Three review tiers, and why the cheap ones do not undermine the isolated one
 
 The plugin's central claim is that an agent cannot judge its own work in the
 same context — so it may look inconsistent that the `designer` now reviews
 every screen before reporting it. It is not, because the two reviews answer
 different questions.
 
-The **self-review** (section 8 of `screen-craft.md`) is mechanical: a `Get`
+The **self-review** (section 7 of `screen-craft.md`) is mechanical: a `Get`
 visitor for clipping, missing fills, color literals, near-miss alignment and
 overlap, then one screenshot read for crowding, edge contact, wrong color,
 contrast and text problems. None of that requires taste, and none of it is
@@ -117,7 +146,13 @@ The **audit** (phase 8, isolated context) is judgment: does this match the
 direction's personality sentence, is the committed choice visible, is the
 hierarchy right. That is exactly what the generating context cannot assess.
 
-The reason to have both is the attempt limit. Each screen gets three visual fix
+Between them sits the **layout review** (phase 7b, `layout-reviewer`, fresh
+context, sonnet): composition intent stated per screen, checked by bounds, fixed
+where the fix is geometric, escalated where it is not. It catches what the
+self-review misses because it is not in the generating context, and what the
+audit would waste attention on because it is beneath the audit's question.
+
+The reason to have all three is the attempt limit. Each screen gets three visual fix
 cycles in the audit; spending one of them on a 3px misalignment is a waste of
 the scarce resource. The self-review exists so that the auditor's findings are
 about things only an auditor could find. The auditor is told to flag anything
@@ -126,14 +161,15 @@ signal that tightens the procedure rather than a reason to soften the verdict.
 
 ### The agents
 
-Four subagents, each in an isolated context with a scoped toolset.
+Five subagents, each in an isolated context with a scoped toolset.
 
 | Agent | Model | Decides | Cannot |
 |---|---|---|---|
 | `researcher` | sonnet | what is true about the domain and what territory is taken | have aesthetic opinions |
 | `brand-designer` | opus, high effort | name, positioning, tone, archetype, palette, logo | design screens |
 | `designer` | sonnet | how to realize a decided direction on the canvas | write files, invent tokens |
-| `auditor` | opus, high effort | PASS or FAIL, against the rubric | fix anything |
+| `layout-reviewer` | sonnet | whether the arrangement does what it claims — alignment, distribution, space — by geometry | judge design; touch color, type, copy, structure |
+| `auditor` | opus, high effort | PASS or FAIL, against the rubric, with every FAIL classified | fix anything |
 
 Two of these constraints are load-bearing rather than tidy:
 
@@ -217,6 +253,23 @@ message, the language instruction lives in **every** agent file, and the
 orchestrating skill states the detected language explicitly in each delegation
 prompt. Without both halves, the auditor hands a Portuguese-speaking user an
 English report.
+
+## Changes during the run
+
+Constraints declared up front have to be **correctable without being eroded**.
+`references/change-protocol.md` draws that line: agents raise, only the
+orchestrating skill decides; three kinds (add a missing definition, amend a
+direction decision, extend the scope); the original decision is never edited in
+place — amendments go in a dated section at the end of the file; the same area
+amended twice in one round means the phase-4 decision was wrong and the fix is
+`git reset`, not a third patch; and every decision is logged in
+`design/changes.md` so the user can review, disagree with, and revert one
+decision at a time after a run that never stopped to ask.
+
+The auditor's failure classification is what feeds it: `execution` goes back to
+the designer, `direction` and `spec` go to the orchestrator. The classification
+exists because a direction failure sent to the designer as an execution failure
+burns three fix cycles on a constraint that cannot be satisfied.
 
 ## What is deliberately absent
 

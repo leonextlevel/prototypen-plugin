@@ -57,6 +57,7 @@ direção, e a escolha comprometida está visível?"* tem.
 | Estrutura do canvas | a grade de caixas nomeadas, vazia, antes de qualquer elemento | `designer` |
 | Sistema | tokens como variáveis do `.pen`, componentes base | `designer` |
 | Telas | um subagente por fluxo, em paralelo | `designer` |
+| Revisão de layout | alinhamento, distribuição e uso do espaço, por geometria | `layout-reviewer` |
 | Auditoria | veredito binário por critério, em loop de correção | `auditor` |
 | Organização | varredura final do canvas, obrigatória | `auditor` |
 | Handoff | o mapa de tokens e componentes para o código | a skill |

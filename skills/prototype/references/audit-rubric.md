@@ -28,8 +28,15 @@ Write `design/audits/<YYYY-MM-DD>.md` in the user's language:
 ```
 ## <Screen or region name>
 - [PASS] <criterion>
-- [FAIL] <criterion> — <what is wrong, where, and what to do about it>
+- [FAIL:execution] <criterion> — <what is wrong, where, what to do> → designer
+- [FAIL:direction] <criterion> — <the direction was followed and is still wrong; what it needs to declare instead> → change request
+- [FAIL:spec] <criterion> — <what the product needs that the spec never listed> → change request
 ```
+
+The class decides where the fix goes. `execution` returns to the designer;
+`direction` and `spec` go to the orchestrator under `change-protocol.md`, and
+are **not** counted against the screen's three fix cycles — they are not the
+screen's fault.
 
 Every FAIL names the node (by name and id), what the correct state is, and the
 fix. "Hierarchy is weak" is not actionable. "The card title (`03 Payment — Card
@@ -97,13 +104,15 @@ meaningful node** — a screen frame, not the document.
 | 3.12 | **Navigation** matches the direction's declared system, is identical across every screen in the flow, shows the current location, and offers a working back affordance. Primary tasks reachable in two steps | Fix the structure, not the label. If the direction never declared a navigation system, that is a phase-4 failure — say so rather than inventing one at audit time. |
 | 3.13 | **Nothing touches a container edge.** Every screen, card, modal, cell and button gives its content inset on all four sides — the designed insets, not device chrome | Add the inset from the direction's spacing rules. |
 | 3.14 | **Spacing comes from the scale, and proximity groups.** Related items sit closer than unrelated ones; gaps between groups are visibly larger than gaps within them; adjacent interactive elements have a gap | Uniform spacing between every child of a container is a defect — it means nothing was grouped. Apply the two-tier gap from the direction. |
-| 3.15 | **Alignment holds.** One dominant alignment edge; body text and forms ranged left, not centered; numeric columns right-aligned with matching headers; icons optically centered against their labels | Fix with layout, not by nudging. A centered paragraph is a FAIL. |
+| 3.15 | **Composition intent applied in full** (`layout.md` §1, §7): the screen's stated intent — centered block, left-ranged list, form on one edge, grid — holds for *every* element it covers; one dominant edge; body text and forms ranged left; numeric columns right-aligned with matching headers; icons optically centered | Normally already fixed by the layout reviewer; if it reaches you, check its report. Partial application — centered heading over left-ranged content — is a FAIL. |
 | 3.16 | **Type sizing is legible and ranked**: body ≥16 on mobile, nothing readable below 12, line length 45–75 characters, no more than ~3 type sizes on a simple screen | Consolidate to the scale's steps. A new size needs a new job. |
 | 3.17 | **Destructive actions confirm in a modal** (bottom sheet on mobile) shaped per `component-catalog.md`: title names the thing, body states the consequence, destructive button is a verb with the object in the destructive color, Cancel is the safe default. Reversible actions do *not* confirm — they act and offer Undo | A destructive action with no confirmation, or a dialog whose confirm button says "OK"/"Yes", is a FAIL. A confirm dialog on a reversible action is also a FAIL — it trains click-through. |
 | 3.18 | **The lightest component that holds the task was used.** No full screen for a confirmation, a quick edit, a short choice or a filter; no modal where a popover or toast would do; no toast carrying an error the user must act on | Cite the catalog ladder (tooltip → popover → menu → toast → sheet → modal → screen) and the right rung. |
 | 3.19 | **Every action gives feedback** — a toast on success, inline validation on a field, a blocking dialog only when blocking is warranted; loading shown on the control that was pressed | Add the feedback at the right weight. Silence after an action is a FAIL. |
 | 3.20 | **The screen shows all of its content.** The frame is viewport-width and content-height; nothing is clipped, dropped or truncated to fit a device height or to make room for a tab bar; bottom navigation follows the content rather than displacing it | Resize the frame to `fit_content` and restore what was cut. A screen that "looks like a phone" but hides a third of its content is a FAIL — the implementer will build what is visible. |
 | 3.21 | **No safe-area bands.** No empty reserved space for status bar, notch, dynamic island or home indicator at the top or bottom of a mobile screen | Remove the band. Safe insets are the implementer's, and `design-spec.md` says so. |
+| 3.22 | **Space is used or deliberately constrained** (`layout.md` §2): no dead zones, no content hugging one side of a wide screen with nothing beside it, columns balanced, rows of cards equal height, rhythm consistent down the screen | Constrain to a max content width and center, or fill, or add a rail — per the direction. Dead space is a FAIL, not "airy". |
+| 3.23 | **Distribution is equal where it claims to be** (`layout.md` §5): rows of equals have equal gaps from `gap`, grids share column positions across rows, fill-vs-fixed is consistent within a group | Fix the parent's `gap`/`justifyContent` or the children's sizing mode, never by nudging `x`. |
 
 ## Level 4 — Completeness
 
