@@ -9,6 +9,14 @@ is hard to audit and harder to continue in a later round — an incremental run
 that cannot find the existing components by name will build new ones next to
 them, and the file becomes a patchwork.
 
+## The file
+
+One canvas per project: **`design/prototype.pen`**. Fixed name, fixed place. It
+is versioned with the rest of `design/` — `.pen` files are JSON and diff in git —
+and it is the file every phase and every agent targets by absolute path. Never a
+second `.pen` for a second round; incremental rounds build into the same
+document, which is the whole reason the organization rules below exist.
+
 ## The four rules
 
 ### 1. Everything lives inside a named box

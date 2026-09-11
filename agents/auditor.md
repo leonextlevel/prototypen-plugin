@@ -31,6 +31,11 @@ user's language.
 
 ## Before you start
 
+**First call: `get_app_state`.** The active canvas must be
+`<project>/design/prototype.pen`; if it is not, stop and report — an audit of the
+wrong file is worse than no audit, because it passes work nobody looked at.
+Every `execute` you make passes that file's absolute path as `filePath`.
+
 Read `skills/prototype/references/audit-rubric.md` — it is your specification
 and you follow it exactly. Then read the constraints you are judging against:
 `design/design-direction.md`, `design/brand.md`, `design/product-spec.md`,

@@ -473,3 +473,50 @@ which is exactly what the required `logo-mono.svg` variant already tests for.
 
 **It is a default, not a restriction.** When the user asks for illustrative,
 ornamental or maximalist, the agent does that instead.
+
+---
+
+## 2026-09-10 — The canvas is always `design/prototype.pen`, checked before anything, asked for once
+
+**Decided:** Step 0 of `/prototypen:prototype` — before mode detection, before
+reading the request in detail — reads the active canvas from `get_app_state`
+and compares it to `<project>/design/prototype.pen`. If they differ, the skill
+stops **once**, asks the user to create and open that file, explains that the
+run will not stop again after this, re-checks on confirmation, and only then
+proceeds. Every canvas-writing agent repeats the check at the start of its
+task, and the skill repeats it before phase 5.
+
+**Why a fixed path:** every round and every agent has to find the same document
+without being told. A path chosen per run drifts, and a second `.pen` for a
+second round defeats the entire canvas-organization strategy.
+
+**Why the check is mandatory, not a courtesy — verified on the live server:**
+`execute` against a `filePath` that does not exist **does not fail**. It returns
+`OK`, and the mutation inside it lands in whatever canvas is active in the
+editor. Tested by inserting a frame through a scratchpad path that did not
+exist: the frame appeared in the unrelated `temp.pen` that was open, with no
+warning. A pipeline without this check could build the entire prototype into
+the wrong document and report success. This is the most dangerous property of
+the tool found so far, and it is recorded in `references/pencil-mcp.md`.
+
+**Why ask rather than automate — also tested:** copying a blank `.pen` and
+opening it with `code -r <path>` returned exit 0, but the user reported it
+opened in a *different* VS Code window (another project they had open) and
+triggered a "suspicious file" trust prompt that needed a click. The MCP server
+is attached to one window; from the agent's side there is no way to observe
+which window took the file or whether it became the active canvas. An automation
+that sometimes silently does the wrong thing is worse than an ask that always
+does the right one. The skill is explicitly told not to try.
+
+**Why it is the only allowed stop and why it is first:** the pipeline's rule is
+no approval gates, because the target is a long unattended run. A precondition
+that cannot be satisfied autonomously has to be checked *before* autonomy starts
+— that is the difference between a gate and a prerequisite. Putting it first,
+with the explanation of why it is being asked now, is what lets the rest of the
+run promise not to stop.
+
+**Left open:** whether an empty (0-byte) file opens correctly as a Pencil canvas,
+and whether `code -r` on a path *inside* the attached workspace behaves better
+than the out-of-workspace test did. Both would let the skill create the file
+itself and only ask the user to open it. Marked TO VERIFY; until then, the user
+creates it.

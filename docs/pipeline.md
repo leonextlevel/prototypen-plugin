@@ -2,7 +2,22 @@
 
 Ten phases. Three of them are conditional or mode-dependent. All of them commit.
 
-## Mode detection (before phase 1)
+## Step 0 — The canvas file (before everything)
+
+The canvas is always `design/prototype.pen`. Before mode detection, before
+reading the request in detail, the skill calls `get_app_state` and compares the
+active canvas path to that target. If they differ, it **stops once and asks** the
+user to create and open the file — explaining that the run is autonomous from
+here to handoff and will not stop again, which is why the ask comes first. On
+confirmation it re-checks rather than trusting the answer, then continues.
+
+This exists because of a verified property of the Pencil MCP: `execute` against
+a path that does not exist does not fail — it silently writes into whatever
+canvas is active. Every canvas-writing agent (`designer`, `brand-designer`,
+`auditor`) repeats the check at the start of its task, and the skill repeats it
+before phase 5, the first canvas write.
+
+## Mode detection (after the canvas check, before phase 1)
 
 The skill inspects `design/` before doing anything else.
 
@@ -267,6 +282,8 @@ afterward, and the cost of unwinding it grows with each subsequent phase.
                        ▼
              design/product-spec.md
                        │
+          0  canvas check ── design/prototype.pen open?
+                       │      (asks once if not; the only stop)
                  mode detection
                        │
         ┌──────────────┴──────────────┐

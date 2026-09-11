@@ -2,8 +2,9 @@
 
 ## Prerequisites
 
-pen.dev running with a `.pen` file open, the `pencil` MCP server connected, and
-a git repository in the project you are designing for. Full detail — including
+pen.dev running with **`design/prototype.pen` open in the Pencil editor** — the
+fixed canvas file every project uses — the `pencil` MCP server connected, and a
+git repository in the project you are designing for. Full detail — including
 why no `.mcp.json` is shipped — in [development.md](development.md).
 
 ## Running it
@@ -75,6 +76,22 @@ Plus the `.pen` file: a `Design System` region with tokens and components, a
 
 A run commits after every phase, so `git log` is a readable record of what
 happened when.
+
+## The one time it stops
+
+Before anything else, the pipeline checks which canvas is open. If it is not
+`design/prototype.pen` in this project, it asks you — once — to create the file
+and open it, and explains why it is asking *now*: the run is autonomous from
+that point to handoff and will not stop for input again.
+
+Create the file where it says (an empty file is fine), open it as a Pencil
+canvas **in this project's VS Code window**, confirm, and it re-checks and
+continues. It will not take your word for it; the check is free.
+
+Why it refuses to proceed with another file open: the Pencil `execute` tool does
+not fail on a path that does not exist — it silently writes into whatever canvas
+is active. Without this check the entire prototype could land in the wrong file
+with no error at all.
 
 ## How long it takes
 
@@ -173,7 +190,9 @@ The organization review still runs, even for a one-screen change.
 
 | Symptom | Cause |
 |---|---|
-| `Failed to access file ""` | No `.pen` file open in pen.dev. Open one. |
+| `Failed to access file ""` | No `.pen` file open in pen.dev. Open `design/prototype.pen`. |
+| The run stops immediately asking about `design/prototype.pen` | Working as intended — it is the single upfront check. Create and open the file in this project's window, then confirm. |
+| Elements appeared in a different `.pen` file | The wrong canvas was active during a write and the check was skipped. `git checkout` that file if it is versioned; then re-run with `design/prototype.pen` open. |
 | Pencil tools missing entirely | The `pencil` MCP server is not configured or not approved. Check `/mcp`. |
 | The skill does not trigger | Say what you want built more directly, or invoke it by name: `/prototypen:prototype`. |
 | Discovery keeps asking questions | It caps at three rounds. Answer "decide you" to anything you do not care about — it will record it as an assumption. |

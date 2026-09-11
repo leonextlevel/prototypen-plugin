@@ -16,6 +16,21 @@ guessing.
   common cause of a dead pipeline run; check it first.
 - `.pen` files are encrypted. **Never use Read, Grep, or any shell tool on a
   `.pen` file.** The MCP tools are the only way in.
+- **The canvas for a project is always `design/prototype.pen`.** Fixed name and
+  place, so every round and every agent finds it without being told.
+- **`execute` cannot create a file, and a `filePath` that does not exist is not
+  an error — it silently redirects to whatever canvas is active.** Verified on
+  the live server (2026-09-10): an `execute` against a non-existent path returned
+  `OK`, and the `Insert` inside it landed in the file that happened to be open in
+  the editor. No warning, no failure. The only defense is to read the active
+  path from `get_app_state` and compare it to the target **before every write
+  session** — at the start of each `designer` task, and again at the first
+  canvas write of the pipeline.
+- Opening a file from the shell with `code <path>` is **not reliable** for this:
+  it can land in a different VS Code window than the one the MCP is attached to,
+  and it triggers a trust prompt the user must click through. Whether the file
+  then became the active canvas cannot be observed from here. Ask the user to
+  open it, then verify with `get_app_state`.
 - When the `pencil` server is declared in a project-scoped `.mcp.json`, Claude
   Code asks for per-server approval before the tools become available. This
   plugin does not ship an `.mcp.json`; see `docs/development.md`.
@@ -24,14 +39,16 @@ guessing.
 
 | Tool | Purpose |
 |---|---|
-| `get_app_state` | Active canvas file, current selection, top-level nodes, existing reusable components, integrated-browser state. Call it first in a session. |
+| `get_app_state` | Active canvas file, current selection, top-level nodes, existing reusable components, integrated-browser state. Call it first in a session, and **again before every write session** to confirm the active file is `design/prototype.pen`. |
 | `read_skill` | `read_skill()` returns the pen-dev SKILL.md; `read_skill({path})` reads a referenced file (`"pen-schema.md"`, `"execute.md"`, `"guide/web-app.md"`, `"guide/design-system.md"`, `"guide/mobile-app.md"`, `"guide/landing-page.md"`, `"guide/table.md"`, `"guide/components.md"`, `"guide/code.md"`, `"guide/tailwind.md"`, `"scripts-and-shaders.md"`, `"slides.md"`). **Read `pen-schema.md` and `execute.md` before the first `execute` call of a session.** |
 | `get_style` | Ready-made visual style archetypes. `get_style()` lists them; `get_style({name})` loads one or returns its required params. **This plugin does not use style archetypes** — they are for when the user has no direction, and this pipeline always produces its own. See `anti-generic.md`. |
 | `execute` | Runs a JavaScript snippet against the document. This is where all reading and writing happens. |
 
 ### `execute` inputs
 
-- `filePath` (required) — path to the `.pen` file.
+- `filePath` (required) — path to the `.pen` file. **Always pass the absolute
+  path of `design/prototype.pen`.** A path that does not exist does not fail; it
+  silently targets the active canvas (see Session preconditions).
 - `input` — the JavaScript snippet.
 - `edits` + `editId` — **when an `execute` call fails, always retry with `edits`
   against the failed call's `editId`; never resend the whole snippet in
@@ -171,6 +188,12 @@ tool. Verify with `TakeScreenshot`.
 phase writes the logo SVG **source** to `design/brand/logo/*.svg` by hand from
 the generated path geometry (`Get` with `includePathGeometry: true`), and uses
 `Export` only for the PNG previews. Confirm before relying on either path.
+
+**TO VERIFY:** whether a 0-byte `design/prototype.pen` opens correctly as a
+Pencil canvas (so the skill could `touch` it and only ask the user to open it),
+and whether `code -r` on a path inside the attached workspace opens in the right
+window without a trust prompt. The out-of-workspace test did neither. Until
+confirmed, the user creates and opens the file.
 
 ## Layout facts that cause most failures
 

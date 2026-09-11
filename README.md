@@ -128,8 +128,10 @@ entre rodadas.
 
 ## Começando
 
-Pré-requisitos: pen.dev rodando com um arquivo `.pen` aberto, o servidor MCP
-`pencil` conectado, e o projeto alvo sendo um repositório git.
+Pré-requisitos: pen.dev rodando, o servidor MCP `pencil` conectado, e o projeto
+alvo sendo um repositório git. O canvas é sempre `design/prototype.pen` — se ele
+não estiver aberto, o pipeline pede uma única vez, no início, que você crie e
+abra o arquivo, e a partir daí roda até o fim sem parar.
 
 ```bash
 claude plugin marketplace add ./prototypen-plugin

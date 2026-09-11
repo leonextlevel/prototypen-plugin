@@ -63,7 +63,48 @@ Two rules keep this from multiplying the work:
 
 Details in `references/canvas-structure.md`.
 
-## Step 0 — Mode detection (do this first, always)
+## Step 0 — The canvas file (before thinking about anything else)
+
+The canvas for a project is **always `design/prototype.pen`**, relative to the
+project root. Fixed name, fixed place, so every round and every agent finds it
+without being told.
+
+Do this before mode detection, before reading the request in detail, before any
+other tool call:
+
+1. Call `get_app_state` and read the **currently active canvas editor** path.
+2. If it is `<project>/design/prototype.pen` — proceed.
+3. If it is anything else — a different file, or no file open — **stop here, once,
+   and ask the user** in their language to create `design/prototype.pen` (if it
+   does not exist yet) and open it in the Pencil editor. Say all of this in the
+   same message:
+   - what to do: create the file at that exact path and open it as a Pencil
+     canvas, in the VS Code window of this project;
+   - **why now**: this is a long autonomous run that will not stop for input
+     again — the canvas has to be right before it starts, because there is no
+     safe place to fix it in the middle;
+   - what happens next: once they confirm, the run goes from here to handoff
+     without further questions.
+4. When the user confirms, call `get_app_state` **again** and re-check the path.
+   Do not take their word for it — the check is free and the failure is not.
+5. Only then continue.
+
+**Never proceed with a different file active.** This is not caution for its own
+sake: `execute` with a `filePath` that does not exist **silently redirects to
+whatever canvas is active** — it returns OK and writes there. A pipeline that
+skipped this check could build the entire prototype into the wrong document
+without a single error. Verified on the live server; details in
+`references/pencil-mcp.md`.
+
+This is the **only** place the pipeline stops for input. It is at the very
+beginning precisely so it never has to be in the middle.
+
+Do not try to open the file yourself with `code <path>`: it can land in another
+VS Code window, and it triggers a trust prompt the user has to click through —
+either way the active canvas may not be the one you need, and you cannot see
+which. Ask, then verify.
+
+## Step 1 — Mode detection (right after the canvas check)
 
 Look at `design/` in the current project before anything else.
 
@@ -200,6 +241,10 @@ explicitly justifies it.
 Read `references/canvas-structure.md` before this phase. It is the whole
 specification for this step.
 
+This is the first canvas write. **Re-check `get_app_state` first**: the active
+canvas must still be `design/prototype.pen`. The user may have switched tabs
+during the document phases, and a write to the wrong file is silent.
+
 Delegate to `prototypen:designer`: create the **named, empty box grid first** —
 a region for the design system, a region for the brand, and one region per flow
 **per declared viewport** (`Flow — Checkout / Mobile`) — and nothing inside them
@@ -304,8 +349,8 @@ Read these when the phase that needs them starts — not up front, not all at on
 
 ## Preconditions
 
-The pen.dev app must be running with a `.pen` file open — every Pencil MCP tool
-fails without one. If the tools report no open file, say so plainly and stop;
-this pipeline cannot produce its main artifact without a canvas. The design
-documents in `design/` can still be produced, and are worth producing, but say
-which half you delivered.
+The pen.dev editor must be running with `design/prototype.pen` open — that is
+Step 0, and it is the single place this pipeline waits for the user. If the
+canvas cannot be made available at all, say so plainly. The design documents in
+`design/` can still be produced, and are worth producing, but say which half you
+delivered.

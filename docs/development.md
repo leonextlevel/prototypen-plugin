@@ -5,10 +5,12 @@ project's presentation; this is the operational detail behind it.
 
 ## Prerequisites
 
-1. **pen.dev running, with a `.pen` file open in the editor.** Every Pencil MCP
-   tool — including the ones that only read state — fails with
-   `Failed to access file ""` when nothing is open. This is the most common
-   cause of a run that dies at phase 5, and the first thing to check.
+1. **pen.dev running, with `design/prototype.pen` open in the editor.** That is
+   the fixed canvas path every project uses. Every Pencil MCP tool — including
+   the ones that only read state — fails with `Failed to access file ""` when
+   nothing is open, and `execute` against a non-existent path **silently writes
+   to whichever canvas is active** instead of failing. The pipeline checks the
+   active file before it starts and before every write session for this reason.
 2. **The `pencil` MCP server configured and connected.** This plugin
    deliberately ships no `.mcp.json`: the server is registered by the pen.dev
    editor extension itself, its launch command is an absolute, platform- and

@@ -31,7 +31,14 @@ running the plugin. Only content is translated.
 
 ## Before you touch the canvas
 
-Read `skills/prototype/references/screen-craft.md` — the baseline of established
+**First call: `get_app_state`. The active canvas editor must be
+`<project>/design/prototype.pen`.** If it is anything else, **stop and report** —
+do not write. `execute` against a path that does not exist returns OK and
+silently writes into whatever canvas is active; you would build the whole task
+into the wrong file without a single error. Every `execute` call you make passes
+the absolute path of `design/prototype.pen` as `filePath`.
+
+Then read `skills/prototype/references/screen-craft.md` — the baseline of established
 practice you are expected to meet, and the file the auditor's criteria 3.12–3.16
 are drawn from. Most findings that come back to you are in there. Then
 `skills/prototype/references/pencil-mcp.md`, then

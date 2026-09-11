@@ -35,6 +35,10 @@ Read, in this order:
 3. `skills/prototype/references/anti-generic.md` — the ban list applies to the
    brand, not just the interface.
 4. `skills/prototype/references/pencil-mcp.md` — before touching the canvas.
+   Then `get_app_state`: the active canvas must be
+   `<project>/design/prototype.pen`, and every `execute` passes its absolute
+   path. If a different file is active, stop and report rather than generating
+   the logo into someone else's document.
 
 ## What you produce
 
