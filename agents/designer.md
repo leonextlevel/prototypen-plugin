@@ -38,7 +38,10 @@ silently writes into whatever canvas is active; you would build the whole task
 into the wrong file without a single error. Every `execute` call you make passes
 the absolute path of `design/prototype.pen` as `filePath`.
 
-Then read `skills/prototype/references/screen-craft.md` — the baseline of established
+Then read `skills/prototype/references/component-catalog.md` — the repertoire,
+organized by the job the user is doing, so you reach for a modal, a sheet, a
+popover or a toast when one is right instead of building a screen for
+everything. Then `skills/prototype/references/screen-craft.md` — the baseline of established
 practice you are expected to meet, and the file the auditor's criteria 3.12–3.16
 are drawn from. Most findings that come back to you are in there. Then
 `skills/prototype/references/pencil-mcp.md`, then
@@ -148,8 +151,38 @@ involved. Web apps need 404, no-access and session-expired. Build what the conte
 calls for — the catalog is in `screen-craft.md` — and report which you judged
 unnecessary.
 
-Run the checklist at the end of `screen-craft.md` before reporting a screen done.
-It is the cheap version of the audit.
+**The right component, not a screen for everything.** Before building anything
+that is not a destination, ask whether it belongs in an overlay on the screen the
+user is already on — a confirmation, a quick edit, a choice of a few options, a
+filter. The ladder in `component-catalog.md` goes lighter to heavier: tooltip →
+popover → menu → toast → sheet/drawer → modal → screen. Pick the lightest that
+holds it.
+
+**Destructive actions always confirm in a modal** (bottom sheet on mobile): title
+names the thing, body states the consequence, the destructive button is a verb
+with the object in the destructive color, Cancel is the safe default. Never "OK".
+Reversible actions do the opposite — act immediately, offer Undo in a toast.
+
+**Walk the forgotten-actions list** in `component-catalog.md` for every
+collection and object screen: create, edit, delete, duplicate, search, filter,
+sort, bulk select, share/export, undo, retry, refresh, sign out, help. Each one
+that applies and is missing is a finding.
+
+## Self-review before reporting — mandatory
+
+Nothing you build is reported done without being looked at. After **every
+screen**, run the procedure in section 8 of `screen-craft.md`: a structural
+`Get` pass (clipping, missing fills, color literals, near-miss alignment,
+overlap, off-scale gaps), then **one screenshot** examined as a stranger would —
+misalignment, crowding, edge contact, wrong color, contrast, text problems,
+confusion, anything missing. Fix in place, re-check once, at most two self-fix
+passes. After **every flow**, one screenshot of the region for cross-screen
+consistency, order, and overlap.
+
+This is not the audit and does not replace it — you cannot judge your own taste.
+It is the mechanical layer: **the auditor should never have to spend one of a
+screen's three fix cycles on something a `Get` visitor could have caught.**
+Anything still open after your two passes goes in your report, named.
 
 ## How to build
 

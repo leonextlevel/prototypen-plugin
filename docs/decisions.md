@@ -520,3 +520,81 @@ and whether `code -r` on a path *inside* the attached workspace behaves better
 than the out-of-workspace test did. Both would let the skill create the file
 itself and only ask the user to open it. Marked TO VERIFY; until then, the user
 creates it.
+
+---
+
+## 2026-09-11 — Self-review after every screen and flow, kept strictly mechanical
+
+**Decided:** the `designer` reviews every screen before reporting it done —
+a `Get` visitor pass (clipping, missing fills, color literals, near-miss
+alignment, overlap, off-scale and uniform gaps), then one screenshot read as a
+stranger would (misalignment, crowding, edge contact, wrong color, contrast,
+text problems, confusion, missing pieces) — with at most two self-fix passes,
+and then reviews each flow as a whole after its last screen. Anything left open
+is named in its report. Procedure in section 8 of `screen-craft.md`.
+
+**Why this does not contradict "self-review approves its own work":** that rule
+is about judgment, and it stands — the designer is explicitly told not to grade
+against the direction's personality sentence or decide whether the committed
+choice shows. The self-review is confined to things that need no taste: an
+agent that drew a card can still see it overlaps the next one, and a visitor
+that finds `ctx.problems` is not being flattered. The two reviews answer
+different questions, and the architecture doc now says so.
+
+**Why it is worth doing at all:** the attempt limit. Each screen gets three
+visual fix cycles in the audit, and screenshot critique stops converging after
+that. Spending one of those three on a 3px misalignment is spending the scarce
+resource on the cheap defect. The self-review costs one `Get` and one
+screenshot and is meant to guarantee that audit findings are about things only
+an isolated auditor could find.
+
+**The feedback loop:** the auditor reads the designer's report first and marks
+any mechanical miss the report does not mention as "not caught by self-review",
+without softening the FAIL. That phrase is the signal for tightening the
+procedure — it is how section 8 grows a new check instead of the rubric growing
+a new subagent.
+
+---
+
+## 2026-09-11 — A component catalog organized by job, and the destructive-action rule
+
+**Decided:** added `references/component-catalog.md` — a repertoire organized by
+what the user is doing (confirm, choose, input, act, navigate, disclose, show a
+collection, show status, structure) rather than by component name, each entry
+with when to use it and when not. Read at phase 6 to decide the base component
+set and at phase 7 before every screen. Rubric criteria 3.17–3.19 and 4.11 are
+its auditable form.
+
+**Why by job, not by name:** the failure being prevented is not "used the wrong
+component" but "did not think of the component at all". A generative designer
+left to its defaults builds a full screen for everything, never reaches for a
+modal, sheet, popover or toast, and forgets the actions that are not the primary
+one. A list keyed by component name does not help with that — the agent has to
+already know it wants a modal to look up "modal". A list keyed by "confirm",
+"choose", "disclose" is looked up by the situation, which is what the agent
+actually has in front of it.
+
+**The screen-versus-overlay decision comes first**, with a ladder from lightest
+to heaviest (tooltip → popover → menu → toast → sheet/drawer → modal → screen)
+and the rule to take the lightest rung that holds the task. This is the single
+most common structural mistake and it is now a FAIL (3.18).
+
+**Destructive actions always confirm in a modal — and reversible ones never do.**
+The second half is as important as the first: a confirmation on a reversible
+action trains users to click through dialogs, which is exactly what makes the
+dialog on the irreversible action useless. So reversible actions act immediately
+and offer Undo in a toast. The dialog itself has a required shape (title names
+the thing, body states the consequence, destructive button is a verb with the
+object in the destructive color, Cancel is the safe default, type-to-confirm for
+high stakes), and "OK"/"Yes"/"Confirm" as the destructive button label is a
+FAIL (3.17).
+
+**The forgotten-actions list** — create, edit, delete, duplicate, search, filter,
+sort, bulk select, share/export, undo, retry, refresh, sign out, help — is walked
+per collection and object screen, at design time and at audit (4.11). The
+product-spec template gained "Other actions" and "Overlays it opens" columns so
+the walk happens at intake, before anything is drawn.
+
+**The catalog says which; the direction says how.** Explicitly: it is not a
+mandate to use everything, and it does not override the direction's visual
+decisions. A modal is still a modal in every direction.

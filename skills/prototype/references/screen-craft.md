@@ -238,19 +238,94 @@ screens the context called for and which were built.
 
 ---
 
-## 8. Before reporting a screen done
+## 8. Self-review: after every screen, and after every flow
 
-Run this list. It is the cheap version of the audit, and it catches most of what
-would otherwise come back as a finding.
+**Nothing is reported done without being looked at.** The audit in phase 8 is
+for judgment — does this match the direction, is the hierarchy right, does the
+committed choice show. It is not for catching a label 3px off its icon or a card
+that overlaps its neighbor. Those are yours to catch, and catching them here
+costs one `Get` and one screenshot; catching them in the audit costs a full fix
+cycle out of the three each screen gets.
 
-- [ ] Navigation present, consistent with the other screens in the flow, current
-      location visible, back available.
-- [ ] Nothing touches a container edge; safe areas respected on mobile.
-- [ ] Every gap comes from the spacing scale; groups read as groups.
-- [ ] One strong alignment edge; numbers right-aligned; no centered paragraphs.
-- [ ] Every color is a `$variable` — **no literals** (this is what breaks themes).
-- [ ] Touch targets meet the platform minimum, with gaps between adjacent ones.
-- [ ] The primary element is identifiable at a glance; three type sizes or so.
-- [ ] Content is realistic, in the user's language, at realistic length.
+This is a **self-review of the obvious**, and it is deliberately mechanical. It
+does not replace the isolated audit — an agent cannot judge its own taste — but
+it can absolutely see its own overlaps.
+
+### After each screen
+
+**1. Structural pass — no screenshot.** One `Get` visitor over the screen:
+
+```js
+Get(screenId, (n, c) => {
+  if (c.problems) Print("CLIP", n.name, c.problems)
+  if (n.type === "text" && !n.fill) Print("NOFILL", n.name)
+  if (typeof n.fill === "string" && n.fill.startsWith("#")) Print("LITERAL", n.name, n.fill)
+  Print(n.name, "|", c.depth, "|", c.bounds.x, c.bounds.y, c.bounds.width, c.bounds.height)
+})
+```
+
+Fix every `CLIP`, `NOFILL` and `LITERAL` before going further. Then read the
+bounds rows for the things numbers reveal better than eyes:
+
+- **Near-miss alignment**: siblings whose `x` (or centers) differ by 1–4px. That
+  is not "slightly off", it is a defect a viewer feels without being able to
+  name.
+- **Overlap**: siblings whose bounds intersect when they should not.
+- **Gaps off the scale**: consecutive siblings whose spacing is not a value from
+  the direction's spacing scale.
+- **Uniform gaps**: every sibling equidistant — nothing was grouped.
+
+**2. Visual pass — one screenshot.** `TakeScreenshot([screenId])`, then look at
+it *as a stranger* — someone who has not spent the last ten minutes building it —
+and go through this list in order:
+
+| Look for | What it looks like |
+|---|---|
+| **Misalignment** | An edge that almost lines up; a row where one item sits higher |
+| **Overlap or crowding** | Anything touching, anything the eye cannot separate |
+| **Edge contact** | Content against a container boundary; a button under the home indicator |
+| **Wrong color** | A literal that slipped through; a token used for the wrong role — body text in the secondary color, a badge in the brand accent |
+| **Contrast** | Text you have to squint at — especially secondary text, placeholder text, and anything on a tinted surface |
+| **Text problems** | Overflow, unintended truncation, a wrap that orphans one word, a label in the wrong language |
+| **Confusion** | Two things that look equally important; an action you cannot tell is an action; a status you cannot read without the legend |
+| **Missing** | The state, the action, or the navigation the spec says should be here and is not |
+
+**3. Fix and re-check.** Fix what you found — in place, with `Update`, never by
+rebuilding. One more screenshot. **At most two self-fix passes per screen**;
+these are cheap, but the audit exists for what does not resolve mechanically.
+If something is still wrong after two, leave it and **say so in your report** —
+an honest open item is a gift to the auditor, a silent one is a wasted cycle.
+
+**4. Then the checklist.** It is short because the two passes above did most of
+it:
+
+- [ ] Navigation present and identical to the flow's other screens; current
+      location visible; back available.
 - [ ] Every state from the spec exists as a named variant.
-- [ ] `Get` visitor run: no `ctx.problems`, bounds inside the parent.
+- [ ] Every action from the "forgotten actions" list in `component-catalog.md`
+      that applies is present; every destructive one is behind a modal.
+- [ ] Content is realistic, in the user's language, at realistic length.
+- [ ] Touch targets meet the platform minimum with gaps between them.
+
+### After each flow
+
+When the last screen of a flow is done, review the **flow**, not the screens:
+
+1. `TakeScreenshot([flowRegionId])` — one image of the whole region.
+2. **Consistency across screens**: the navigation is in the same place with the
+   same items; the page header sits at the same height; the same component looks
+   the same everywhere; the spacing rhythm does not shift between screens.
+3. **Order and continuity**: the screens sit in navigation order; each one's
+   primary action leads to the next; nothing in the sequence is unreachable and
+   nothing reachable is missing.
+4. **Nothing overlaps another screen**, and the gaps between screens are equal.
+5. Fix, and then report — including the screens you left open items on.
+
+### What this is not
+
+It is not the audit. Do not grade the design against the direction's personality
+sentence, do not argue about whether the palette works, do not decide the
+committed choice is visible. Those judgments need a context that did not make
+the choices. Your job here is narrower and more valuable than it sounds: **make
+sure the auditor never has to spend a finding on something a `Get` visitor could
+have caught.**

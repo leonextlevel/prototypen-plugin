@@ -69,7 +69,8 @@ one phase and not at all for the other nine.
 | `brand.md` | when the brand phase runs, what a brand must define, the logo variants |
 | `design-direction.md` | the divergence axes, what a direction must declare, how to choose |
 | `anti-generic.md` | what is banned, and the boundary between visual and interaction |
-| `screen-craft.md` | the craft baseline — navigation, spacing, alignment, targets, secondary screens |
+| `screen-craft.md` | the craft baseline — navigation, spacing, alignment, targets, secondary screens, and the per-screen self-review |
+| `component-catalog.md` | the repertoire by job — which component for which behavior, the screen-vs-overlay decision, the destructive-action rule, the forgotten actions |
 | `canvas-structure.md` | how the Pencil document is organized and audited |
 | `audit-rubric.md` | every pass/fail criterion, at four levels |
 | `pencil-mcp.md` | the verified Pencil API and its failure modes |
@@ -96,6 +97,32 @@ rule in it has a matching criterion in `audit-rubric.md` (3.12–3.16, 4.10), an
 the designer reads it before drawing rather than meeting it for the first time in
 a finding. A standard handed over up front is far cheaper than the same standard
 discovered through three fix cycles.
+
+### Two review layers, and why the cheap one does not undermine the isolated one
+
+The plugin's central claim is that an agent cannot judge its own work in the
+same context — so it may look inconsistent that the `designer` now reviews
+every screen before reporting it. It is not, because the two reviews answer
+different questions.
+
+The **self-review** (section 8 of `screen-craft.md`) is mechanical: a `Get`
+visitor for clipping, missing fills, color literals, near-miss alignment and
+overlap, then one screenshot read for crowding, edge contact, wrong color,
+contrast and text problems. None of that requires taste, and none of it is
+subject to the self-justification problem — an agent that placed a card can
+still see that it overlaps the next one. Two passes, then report, naming what
+is still open.
+
+The **audit** (phase 8, isolated context) is judgment: does this match the
+direction's personality sentence, is the committed choice visible, is the
+hierarchy right. That is exactly what the generating context cannot assess.
+
+The reason to have both is the attempt limit. Each screen gets three visual fix
+cycles in the audit; spending one of them on a 3px misalignment is a waste of
+the scarce resource. The self-review exists so that the auditor's findings are
+about things only an auditor could find. The auditor is told to flag anything
+mechanical the self-review missed as "not caught by self-review" — a process
+signal that tightens the procedure rather than a reason to soften the verdict.
 
 ### The agents
 

@@ -39,8 +39,15 @@ Rank them — the primary job earns the primary screen.>
 <Every screen, grouped by flow. One line each: name, purpose, the primary object
 it shows, and the primary action available on it.>
 
-| Flow | Screen | Purpose | Primary action |
-|---|---|---|---|
+| Flow | Screen | Purpose | Primary action | Other actions | Overlays it opens |
+|---|---|---|---|---|---|
+
+<"Other actions" is checked against the forgotten-actions list in
+skills/prototype/references/component-catalog.md — create, edit, delete,
+duplicate, search, filter, sort, bulk select, share/export, undo, retry, refresh.
+"Overlays it opens" names the modals, sheets, drawers and popovers this screen
+uses instead of navigating away — a destructive action here implies a
+confirmation modal.>
 
 ## Secondary screens
 <The screens the application type requires that nobody lists as features. Decide

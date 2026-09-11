@@ -5,7 +5,8 @@ Read this at phase 8 (audit) and phase 9 (organization review).
 Levels 1, 2 and 4 are checked against the canvas and the spec. Level 3 is checked
 against `design/design-direction.md`, `design/brand.md`, `anti-generic.md`, and
 **`screen-craft.md`** — the craft baseline the designer was given before drawing.
-Criteria 3.12–3.16 below are the auditable form of that file; when one fails,
+Criteria 3.12–3.16 below are the auditable form of that file, and 3.17–3.19 and
+4.11 are the auditable form of `component-catalog.md`; when one fails,
 cite the section of `screen-craft.md` it comes from so the fix is unambiguous.
 
 Every criterion below gets a **binary verdict** — PASS or FAIL. Not a score, not
@@ -98,6 +99,9 @@ meaningful node** — a screen frame, not the document.
 | 3.14 | **Spacing comes from the scale, and proximity groups.** Related items sit closer than unrelated ones; gaps between groups are visibly larger than gaps within them; adjacent interactive elements have a gap | Uniform spacing between every child of a container is a defect — it means nothing was grouped. Apply the two-tier gap from the direction. |
 | 3.15 | **Alignment holds.** One dominant alignment edge; body text and forms ranged left, not centered; numeric columns right-aligned with matching headers; icons optically centered against their labels | Fix with layout, not by nudging. A centered paragraph is a FAIL. |
 | 3.16 | **Type sizing is legible and ranked**: body ≥16 on mobile, nothing readable below 12, line length 45–75 characters, no more than ~3 type sizes on a simple screen | Consolidate to the scale's steps. A new size needs a new job. |
+| 3.17 | **Destructive actions confirm in a modal** (bottom sheet on mobile) shaped per `component-catalog.md`: title names the thing, body states the consequence, destructive button is a verb with the object in the destructive color, Cancel is the safe default. Reversible actions do *not* confirm — they act and offer Undo | A destructive action with no confirmation, or a dialog whose confirm button says "OK"/"Yes", is a FAIL. A confirm dialog on a reversible action is also a FAIL — it trains click-through. |
+| 3.18 | **The lightest component that holds the task was used.** No full screen for a confirmation, a quick edit, a short choice or a filter; no modal where a popover or toast would do; no toast carrying an error the user must act on | Cite the catalog ladder (tooltip → popover → menu → toast → sheet → modal → screen) and the right rung. |
+| 3.19 | **Every action gives feedback** — a toast on success, inline validation on a field, a blocking dialog only when blocking is warranted; loading shown on the control that was pressed | Add the feedback at the right weight. Silence after an action is a FAIL. |
 
 ## Level 4 — Completeness
 
@@ -118,6 +122,7 @@ thinks about while designing the happy path.
 | 4.8 | **Every declared viewport** has the flows and screens the spec lists for it |
 | 4.9 | **Every declared theme** has token coverage, and the `Theme Check` set exists |
 | 4.10 | **The secondary screens the context requires exist** — for a mobile app that means at least splash, first run, permission request *and* permission denied, and offline where a network is involved; for a web app 404, no-access and session-expired; for a marketing site 404 and form confirmation. Catalog in `screen-craft.md` |
+| 4.11 | **The forgotten actions are present** where they apply — create (reachable from the empty state too), edit, delete, duplicate, search, filter, sort, bulk select, share/export, undo, retry, refresh, sign out, help. Checked against the list in `component-catalog.md` per collection and object screen |
 
 FAIL → build the missing state as a variant beside its screen, named per
 `canvas-structure.md`.
@@ -126,6 +131,19 @@ States are built for the **primary viewport** and only carried to the second
 where the state actually differs there — an empty state usually does, a loading
 skeleton usually does not. Say which in the audit rather than demanding a full
 cross-product.
+
+## What the designer already checked
+
+Before reporting a screen, the designer runs the self-review in section 8 of
+`screen-craft.md` — a `Get` pass for clipping, missing fills, literals,
+near-miss alignment and overlap, and one screenshot for the obvious. Its report
+names anything it left open.
+
+Read that report first. **If you find something mechanical that the self-review
+should have caught and the report does not mention, say so explicitly in the
+finding** ("not caught by self-review") — that is a process signal worth more
+than the defect itself, and it is how the self-review procedure gets tightened.
+Do not soften the FAIL because of it.
 
 ## The attempt limit
 

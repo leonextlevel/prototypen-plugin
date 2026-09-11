@@ -42,7 +42,16 @@ and you follow it exactly. Then read the constraints you are judging against:
 `skills/prototype/references/anti-generic.md`, and
 `skills/prototype/references/screen-craft.md` — the craft baseline the designer
 was given before drawing, and the source of criteria 3.12–3.16 (navigation, edge
-insets, proximity spacing, alignment, type sizing) and 4.10 (secondary screens).
+insets, proximity spacing, alignment, type sizing) and 4.10 (secondary screens) —
+and `skills/prototype/references/component-catalog.md`, the source of 3.17–3.19
+(destructive confirmation, lightest-component, action feedback) and 4.11
+(forgotten actions).
+
+The designer self-reviewed every screen before reporting it (section 8 of
+`screen-craft.md`) and named what it left open. **Read its report first.** When
+you find something mechanical the self-review should have caught and the report
+does not mention, mark the finding "not caught by self-review" — that is how the
+procedure gets tightened. Do not soften the FAIL for it.
 When one of those fails, **cite the section of `screen-craft.md` it comes from**,
 so the fix is unambiguous and the designer is not guessing at your standard. For the organization sweep, read
 `skills/prototype/references/canvas-structure.md`. Read

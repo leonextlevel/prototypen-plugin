@@ -259,7 +259,13 @@ spacing, radius, border, shadow, from `design/design-direction.md` and
 `design/brand.md`. **Every color token carries a value for every declared
 theme**, as a `{value, theme}` array — a token with one value in a two-theme
 project breaks that theme everywhere it is used. Then the base components, each placed in the design-system
-region with its variants and states laid out beside it.
+region with its variants and states laid out beside it. **Decide the set by
+walking the screen inventory against `references/component-catalog.md`**: for
+each screen, which jobs does it do — confirm, choose, input, act, navigate,
+disclose, show a collection, show status — and which component does each job.
+That produces the subset this product needs, and it surfaces the overlays
+(modal, sheet, drawer, popover, toast) a screen-by-screen build would forget to
+make.
 
 The designer may not invent a token. If something is needed that the direction
 does not define, it stops and reports; you decide and amend the direction file.
@@ -288,6 +294,21 @@ navigation system before any element, insetting content from every container
 edge, grouping by proximity instead of spacing uniformly, and holding one
 alignment edge are what most findings would otherwise be about. Handing the
 designer that standard up front is cheaper than discovering it in the audit.
+
+**Every screen is self-reviewed before it is reported done, and every flow
+after its last screen** — the procedure is section 8 of `screen-craft.md`. This
+is a mechanical pass for the obvious: a `Get` visitor for clipping, missing
+fills, color literals, near-miss alignment and overlap, then one screenshot read
+as a stranger would for crowding, edge contact, wrong color, contrast, text
+problems and confusion. Two self-fix passes at most. It is not the audit — the
+designer cannot judge its own taste — and it exists so the auditor never spends
+one of a screen's three fix cycles on something a visitor could have caught.
+
+**Not every task is a screen.** Confirmations, quick edits, short choices and
+filters belong in an overlay on the screen the user is already on; the catalog's
+ladder — tooltip → popover → menu → toast → sheet → modal → screen — picks the
+lightest that holds it. Destructive actions always confirm in a modal; reversible
+ones act immediately and offer Undo.
 
 ### 8 — Audit
 
@@ -342,6 +363,7 @@ Read these when the phase that needs them starts — not up front, not all at on
 | `references/brand.md` | phase 3, and any time the user brings an existing brand |
 | `references/design-direction.md` | phase 4 |
 | `references/anti-generic.md` | phase 4, phase 6, and every audit |
+| `references/component-catalog.md` | phase 6 (choosing the base set), phase 7 |
 | `references/screen-craft.md` | phases 6 and 7, and every audit fix |
 | `references/canvas-structure.md` | phase 5, and phase 9 always |
 | `references/audit-rubric.md` | phases 8 and 9 |
