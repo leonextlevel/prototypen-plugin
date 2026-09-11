@@ -165,6 +165,13 @@ text, permission denied). The state inventory here is what the completeness audi
 in phase 8 checks against — if a state is missing from the spec, nobody will
 notice it is missing from the canvas.
 
+The spec also carries the **navigation map**: one row per screen and overlay,
+what opens it and every way out. It is written here, before anything is drawn,
+because an orphan screen or a dead end costs a row to prevent and a fix cycle to
+find. Every screen needs an entry and an exit; every overlay needs a dismiss and
+a completion path; every flow has a wired first screen and a last screen that
+returns somewhere.
+
 The inventory covers the flows **and the secondary screens the context requires**
 — a mobile app needs a splash, a first run, a permission request and its denied
 state; a web app needs 404, no-access and session-expired; a marketing site needs
@@ -340,6 +347,12 @@ outside geometry is one line for you and nothing more.
 Read `references/audit-rubric.md`. Delegate to `prototypen:auditor` in a fresh
 context — never let the agent that drew a screen judge it. Self-review in the
 same context approves its own work.
+
+Five levels: structural, canvas organization and **navigation integrity** first
+(no screenshot — the last one walks the spec's navigation map against the
+canvas: every screen has a visible way in and a way out, every overlay a dismiss
+and a completion path, every flow a wired start and an end that returns
+somewhere), then visual, then completeness.
 
 The auditor writes `design/audits/<YYYY-MM-DD>.md` with a binary verdict per
 criterion, and **every FAIL classified**: `execution` (the constraint is right,

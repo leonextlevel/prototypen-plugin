@@ -80,8 +80,10 @@ design that has already been judged, so a failed audit throws away half as much.
 skill produces that file interactively, and redoing the intake would discard
 answers a human actually gave.
 
-Personas, jobs, core loop, screen inventory, and — the part that matters most —
-the **state inventory**: for every screen, which of empty / loading / error /
+Personas, jobs, core loop, screen inventory, the **navigation map** (per screen
+and overlay: what opens it, every way out — written before anything is drawn so
+orphans and dead ends cost a row to prevent instead of a fix cycle to find),
+and — the part that matters most — the **state inventory**: for every screen, which of empty / loading / error /
 first run / long list / long text / permission denied apply, and what each
 shows. Phase 8's completeness level checks against this table. A state missing
 here is a state nobody will notice is missing from the canvas.
@@ -229,8 +231,11 @@ centered, one edge is one edge, and equal is equal.
 | **Out** | `design/audits/<YYYY-MM-DD>.md`, plus fixes |
 | **By** | `prototypen:auditor`, **in a fresh context** |
 
-Four levels, in order: structural (no screenshot), canvas organization (no
-screenshot), visual (screenshot), completeness. Binary PASS/FAIL, every FAIL
+Five levels: structural, canvas organization and navigation integrity first
+(no screenshot — the last walks the spec's navigation map against the canvas
+for orphan screens and dead ends: every screen with a visible way in and out,
+every overlay with a dismiss and a completion path, every flow wired at both
+ends), then visual (screenshot), then completeness. Binary PASS/FAIL, every FAIL
 naming the node and the fix.
 
 Every FAIL is classified. `execution` failures go back to a `prototypen:designer`;

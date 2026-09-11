@@ -36,6 +36,16 @@ tooltip → popover → dropdown menu → toast → bottom sheet / drawer → mo
 
 ---
 
+## Every overlay has a way out — two, in fact
+
+Before the specific entries: **any overlay — modal, alert, sheet, drawer,
+popover — has a dismiss and a completion path**, both visible. Dismiss is
+Cancel, ✕, Escape, swipe-down, or tap-outside (state which); completion is the
+action that does the thing and closes it. An overlay with only its action is a
+trap; an overlay with only a dismiss is a screen that should not have been an
+overlay. Both go in the navigation map in `design/product-spec.md` as an
+"exits to" entry.
+
 ## Confirm, interrupt, inform
 
 | Component | Use it for | Not for |

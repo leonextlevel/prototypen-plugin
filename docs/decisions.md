@@ -740,3 +740,44 @@ not count against a screen's three cycles, because they are not the screen's
 fault. The auditor is told the misclassification cost explicitly: a direction
 failure sent to the designer as execution produces three cycles of a designer
 trying to satisfy a constraint that cannot be satisfied.
+
+---
+
+## 2026-09-11 — A navigation map in the spec, and a reachability level in the audit
+
+**Decided:** `design/product-spec.md` carries a **navigation map** — one row per
+screen and overlay: what opens it ("entered from") and every way out ("exits
+to") — written at intake, built against by the designer, walked in the flow
+self-review, carried into `design-spec.md` as the implementer's routing table,
+and verified by a new audit **Level 5 — Navigation integrity** (7 criteria, no
+screenshot, run with levels 1 and 2).
+
+**The gap:** reachability was three scattered sentences — "back always exists",
+"primary tasks within two steps", "nothing in the sequence is unreachable" —
+with no artifact declaring the graph and no criterion walking it. So an orphan
+screen (built, never linked from anywhere) or a dead end (a success screen with
+no Done, a modal whose only button is the destructive one, a permission-denied
+state that only explains) could pass every level, because every level looked at
+screens one at a time. Reachability is a property of the graph, and it needs
+the graph written down.
+
+**Why the map lives in the spec, before drawing:** an orphan or a dead end costs
+one table row to prevent and a full fix cycle to find. Declaring "entered from"
+forces the question *how does the user get here* to be answered for every
+screen before any exists; declaring "exits to" does the same for *how do they
+leave*. An empty cell is the finding, at the cheapest possible moment.
+
+**Why it is a separate audit level rather than more level-4 rows:** it is a
+different question — not "does this state exist" but "is this screen connected"
+— and it is cheap, so it runs *before* the visual pass, not after: a screen that
+cannot be reached does not deserve a screenshot until it can be.
+
+**Why it goes to handoff:** the map is exactly the routing table an implementer
+needs, and a screen missing from it will not get a route. The design-spec
+template now carries it, verified against the canvas.
+
+**The canvas has no links.** pen.dev, as documented, does not encode navigation
+between frames, so the check is by reading: does the control the map names
+exist, visibly, on the screen the map names, labeled to go where the map says.
+`Get` visitors listing each screen's named controls do most of it; a screenshot
+only where a label is ambiguous.

@@ -59,6 +59,16 @@ implementation needs. Include the canvas node name so it can be found.>
 | Flow | Screen | Viewport | Canvas node | States built | Notes |
 |---|---|---|---|---|---|
 
+## Navigation map
+<Carried from design/product-spec.md and verified against the canvas: for every
+screen and overlay, what opens it and every way out. This is the routing table
+an implementer builds from — a screen missing here will not get a route, and an
+overlay without a dismiss here will trap users in implementation exactly as it
+would have in the prototype.>
+
+| Flow | Screen / overlay | Entered from | Exits to |
+|---|---|---|---|
+
 ## Rules the canvas cannot show
 - **Screens are content-height, not device-height.** Every screen frame shows
   all of its content; nothing scrolls in the prototype. <State per screen, or

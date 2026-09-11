@@ -2,7 +2,8 @@
 
 Read this at phase 8 (audit) and phase 9 (organization review).
 
-Levels 1, 2 and 4 are checked against the canvas and the spec. Level 3 is checked
+Levels 1, 2, 4 and 5 are checked against the canvas and the spec (level 5 against
+the spec's navigation map specifically). Level 3 is checked
 against `design/design-direction.md`, `design/brand.md`, `anti-generic.md`, and
 **`screen-craft.md`** — the craft baseline the designer was given before drawing.
 Criteria 3.12–3.16 below are the auditable form of that file, and 3.17–3.19 and
@@ -17,9 +18,9 @@ The auditor runs in a **separate context** from whoever produced the work. Self-
 review in the same context approves its own work — it has already justified every
 decision to itself once.
 
-Run the levels in order. Level 1 and 2 need no screenshot and are nearly free;
-finding a structural failure there saves the expensive visual pass on work that
-has to be redone anyway.
+Run levels 1, 2 and 5 first — none needs a screenshot and all are nearly free;
+finding a structural failure or a dead end there saves the expensive visual
+pass on work that has to be redone anyway. Then 3, then 4.
 
 ## Report format
 
@@ -82,6 +83,32 @@ Detailed method in `canvas-structure.md`. Mandatory every round.
 
 FAIL → fix by `Move`, `Update` on `x`/`y`, resize, or rename. **Never by
 deleting and rebuilding.** Fixed before handoff, never filed as a note.
+
+## Level 5 — Navigation integrity (no screenshot; run with levels 1 and 2)
+
+Numbered last, run early: it is cheap, and an orphan screen or a dead end is a
+structural defect that makes the visual pass on that screen pointless. The
+reference is the **navigation map** in `design/product-spec.md`. Walk every row
+against the canvas — `Get` visitors listing each screen's named controls, a
+screenshot only where a label is ambiguous.
+
+| # | Criterion | FAIL → |
+|---|---|---|
+| 5.1 | **Every screen is in the map, and every map row is on the canvas** — no screen exists that nobody planned a route for, no planned screen is missing | Add the row or build the screen; a screen not in the map will not get a route in implementation. |
+| 5.2 | **Every screen has at least one way in, present on the canvas**: the control the map names ("entered from") exists on the screen it says, and is labeled to lead here | Add the entry control where the map says — a nav item, a list row, a button. A screen reachable only by deep link is an orphan. |
+| 5.3 | **Every screen has at least one way out, present on the canvas**: back, close, a tab bar, or a completion action that leads to a named screen | Add it. A terminal screen with no control is a trap. |
+| 5.4 | **Every overlay has a dismiss AND a completion path** — Cancel/✕/swipe/outside-tap *and* the action that does the thing; both visible | Add the missing one. A modal whose only button is the destructive one is a trap with a confirmation on it. |
+| 5.5 | **Flow entry and flow end are wired**: the first screen is reachable from the product's navigation; the last screen returns where the map says — home, the list, the object | Wire it. An onboarding that ends nowhere, a success screen with no Done, is a FAIL. |
+| 5.6 | **Dead-end states have a way forward**: permission denied, offline, error, empty search, session expired — each offers Retry, Back, Settings, or Clear as the context needs | Add the control. A state that only explains is half a state. |
+| 5.7 | **Navigation returns are truthful**: Back goes to where the user came from, Cancel discards and closes, ✕ closes without side effects — labels match behavior | Relabel or rewire. "Cancel" that saves is a FAIL. |
+
+Report format for this level names the screen, the missing edge (in or out),
+and where the map says it should lead:
+
+```
+- [FAIL:execution] 5.3 `07 Order Confirmed` has no exit — map says "Done → 01 Orders". Add the Done action.
+- [FAIL:spec] 5.1 `Settings / Notifications` exists on the canvas and is not in the map — no entry planned. Spec needs the row; likely entered from `Settings` list.
+```
 
 ## Level 3 — Visual (screenshot)
 
@@ -170,5 +197,5 @@ what was tried, and why it did not resolve. Then move on. An honest open finding
 is worth more than a fourth pass, and a human reading the report can decide in
 ten seconds what the loop could not decide in three.
 
-Levels 1, 2, and 4 are **not** subject to this limit. They are objective, they
+Levels 1, 2, 4 and 5 are **not** subject to this limit. They are objective, they
 converge, and they get fixed until they pass.

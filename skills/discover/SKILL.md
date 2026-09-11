@@ -169,6 +169,12 @@ Three of those carry more weight than the rest:
   where the user checks whether you guessed wrong, and it is cheaper to read
   than to answer.
 
+Derive the **navigation map** as you derive the screens: for each one, what
+opens it and every way out. A screen you cannot name an entry for is a screen
+the user will never find; an overlay without a dismiss is a trap. Filling that
+table at intake is what keeps the audit from finding orphans and dead ends
+after everything is drawn.
+
 Derive the screen inventory yourself from the jobs **and from the application
 type** — the flows the jobs imply, plus the secondary screens the platform
 requires (splash, first run, permission request and denied, offline, 404,

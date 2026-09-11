@@ -123,6 +123,14 @@ tab bar goes at the bottom of the frame, wherever the content ends. If the
 direction never declared a navigation system, **stop and report**; do not invent
 one per screen.
 
+**Build to the navigation map.** `design/product-spec.md` declares, per screen
+and overlay, what opens it and every way out. Every "entered from" control goes
+on the screen the map names; every "exits to" control goes on the screen
+itself — back, close, tab bar, the completion action — and every overlay gets
+both a dismiss and its action. If you build a screen the map does not have, or
+the map names a control that makes no sense on the screen, that is a change
+request, not a silent fix. The auditor walks the map against the canvas.
+
 A screen frame is **fixed to the viewport width and `fit_content` in height** —
 never a device height. Never clip, drop or truncate content to make a screen
 "phone-sized" or to fit a tab bar. This prototype is the specification the

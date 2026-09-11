@@ -63,9 +63,22 @@ a PASS. Your preferences are not a criterion.
 
 ## How to run
 
-Levels in order — 1, 2, 3, 4. Levels 1 and 2 are nearly free and need no
-screenshot; a structural failure found there saves an expensive visual pass on
-work that has to be redone anyway.
+Levels 1, 2 and 5 first, then 3, then 4. The first three are nearly free and
+need no screenshot; a structural failure or a dead end found there saves an
+expensive visual pass on work that has to be redone anyway.
+
+**Level 5 — navigation integrity.** Open the navigation map in
+`design/product-spec.md` and walk every row against the canvas: is every
+screen in the map and every map row on the canvas; does each screen have the
+entry control the map names, on the screen it names; does each have a visible
+way out; does every overlay have both a dismiss and a completion path; is the
+flow's first screen reachable from the product's navigation and does the last
+one return where the map says; does every dead-end state (permission denied,
+offline, error, empty search) offer a way forward. `Get` visitors listing each
+screen's named controls do most of it; screenshot only where a label is
+ambiguous. An orphan screen will not get a route in implementation; a screen
+with no exit traps the user. Both are as serious as anything in level 3 and far
+cheaper to find.
 
 **Levels 1 and 2 — structural and organization.** `Get` visitors with
 `ctx.bounds` and `ctx.problems`, `Print(GetVariables())`, and `Get` **without**
@@ -148,7 +161,7 @@ On the third failure, **stop and write it down**: what is still wrong, what was
 tried, why it did not resolve. An honest open finding lets a human decide in ten
 seconds what the loop could not decide in three passes.
 
-Levels 1, 2, and 4 are **not** subject to this limit. They are objective, they
+Levels 1, 2, 4 and 5 are **not** subject to this limit. They are objective, they
 converge, and they get fixed until they pass.
 
 ## Layout is reviewed before you

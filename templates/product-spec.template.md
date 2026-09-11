@@ -49,6 +49,22 @@ duplicate, search, filter, sort, bulk select, share/export, undo, retry, refresh
 uses instead of navigating away — a destructive action here implies a
 confirmation modal.>
 
+## Navigation map
+<The graph, declared before anything is drawn. One row per screen and per
+overlay (modal, sheet, drawer) in every flow. "Entered from" lists every
+control that opens it — a nav item, a list row, a button, a deep link. "Exits
+to" lists every way out and where each goes: back, close/cancel, the completion
+action, tab bar. Every screen needs at least one entry and one exit; every
+overlay needs a dismiss AND a completion path. A row with an empty cell is an
+orphan or a dead end, found here instead of in the audit.>
+
+| Flow | Screen / overlay | Entered from | Exits to |
+|---|---|---|---|
+| | | | |
+
+<Flow entry: which screen is the first one, and how the user gets to it from the
+product's navigation. Flow end: where the last screen returns to.>
+
 ## Secondary screens
 <The screens the application type requires that nobody lists as features. Decide
 from context which apply — do not build all of them. Catalog and reasoning in

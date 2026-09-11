@@ -88,9 +88,26 @@ is not.
 - **Current location is always visible.** A selected tab, an active sidebar row,
   a breadcrumb. A user who cannot tell where they are will not trust anything
   else on the screen.
+- **Every screen has a way in and a way out — visibly.** A way in is a control
+  on some other screen that opens it: a nav item, a list row, a button, a link.
+  A way out is a control on the screen itself that leaves it: back, close, a
+  tab bar, a completion action that goes somewhere. Both are declared in the
+  **navigation map** in `design/product-spec.md` before anything is drawn, and
+  the audit walks that map against the canvas. A screen with no entry is an
+  orphan — it will not get a route in implementation. A screen with no exit is
+  a trap.
+- **Every overlay has a dismiss *and* a completion path.** A modal has Cancel
+  (or ✕) and its action; a sheet dismisses by swipe or ✕ and completes by
+  choosing; a drawer closes. A modal whose only button is the destructive one
+  is a trap with a confirmation on it.
 - **Back always exists and always goes back.** On mobile, the platform gesture
   plus a visible affordance on any screen pushed onto a stack. Never a back
   control that goes somewhere other than where the user came from.
+- **The end of a flow returns somewhere.** A success screen has "Done" or
+  "Continue" and it leads to a named screen; onboarding has Skip and a last
+  step that lands on the home screen; a permission-denied state has a way
+  forward; an error state has Retry or Back. A terminal screen with no control
+  is the most common dead end.
 - **Primary tasks within two steps.** If the core loop from `product-spec.md`
   takes three or more navigations, the structure is wrong, not the labels.
 - **Do not hide primary destinations behind a hamburger** on mobile when a tab
@@ -297,9 +314,15 @@ When the last screen of a flow is done, review the **flow**, not the screens:
 2. **Consistency across screens**: the navigation is in the same place with the
    same items; the page header sits at the same height; the same component looks
    the same everywhere; the spacing rhythm does not shift between screens.
-3. **Order and continuity**: the screens sit in navigation order; each one's
-   primary action leads to the next; nothing in the sequence is unreachable and
-   nothing reachable is missing.
+3. **Order and continuity, against the navigation map**: open the flow's rows
+   in `design/product-spec.md` and walk them. For every screen and overlay: is
+   each "entered from" control actually present on the screen it says? Is each
+   "exits to" control present and labeled to go where it says? Does the flow's
+   first screen have its entry from the product's navigation, and does the last
+   one return where the map says? Any empty cell in the map, any control the
+   map names that is not on the canvas, any screen on the canvas that is not in
+   the map — fix it or report it. This is the check that prevents orphan screens
+   and dead ends, and the auditor will repeat it.
 4. **Nothing overlaps another screen**, and the gaps between screens are equal.
 5. Fix, and then report — including the screens you left open items on.
 
