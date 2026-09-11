@@ -102,18 +102,26 @@ ask from the top.
    the audit checks contrast in every declared theme. Nothing downstream may
    quietly narrow this list.
 
-5. **Whether a brand already exists.** Name, logo, palette, guidelines, or a
+5. **What kind of application this is** — native mobile app, web app, marketing
+   site, internal tool, desktop app. It determines a whole class of screens
+   nobody lists as features and everybody expects: a mobile app needs a splash
+   and a permission flow, a web app needs 404 and session-expired, a marketing
+   site needs a form confirmation. Derive these yourself from the answer — do not
+   ask the user to list them. The catalog is in
+   `skills/prototype/references/screen-craft.md`.
+
+6. **Whether a brand already exists.** Name, logo, palette, guidelines, or a
    parent product it must sit inside. This determines whether the pipeline's
    brand phase runs at all, and an existing brand discovered halfway through
    invalidates the design direction. **Always ask this.** If one exists, ask
    where the files are.
-6. **Scale and content realities.** How many items in the biggest list, the
+7. **Scale and content realities.** How many items in the biggest list, the
    longest realistic name, the largest number, the deepest nesting. This is what
    breaks layouts, and users know it and never volunteer it.
-7. **Constraints that are not negotiable.** An existing design system, a
+8. **Constraints that are not negotiable.** An existing design system, a
    framework, an accessibility requirement, a regulatory rule, a device the
    client insists on.
-8. **What is explicitly out of scope**, so nothing is audited later for a
+9. **What is explicitly out of scope**, so nothing is audited later for a
    missing thing that was never intended.
 
 ## What NOT to ask
@@ -161,8 +169,11 @@ Three of those carry more weight than the rest:
   where the user checks whether you guessed wrong, and it is cheaper to read
   than to answer.
 
-Derive the screen inventory yourself from the jobs. Do not ask the user to list
-screens — deciding what screens exist is design work, and it is yours.
+Derive the screen inventory yourself from the jobs **and from the application
+type** — the flows the jobs imply, plus the secondary screens the platform
+requires (splash, first run, permission request and denied, offline, 404,
+session expired, form confirmation, as applicable). Do not ask the user to list
+screens: deciding what screens exist is design work, and it is yours.
 
 ## When there is already a spec
 

@@ -14,6 +14,7 @@ Assumptions.>
 
 | | Targets | Primary | Notes |
 |---|---|---|---|
+| **Application type** | <native mobile / web app / marketing site / internal tool / desktop> | — | <drives the secondary screens below> |
 | **Viewport** | <desktop / mobile / both> | <which one is designed first> | <target widths for each> |
 | **Theme** | <light / dark / both> | <which one is the default> | <any theme-specific constraint> |
 
@@ -40,6 +41,25 @@ it shows, and the primary action available on it.>
 
 | Flow | Screen | Purpose | Primary action |
 |---|---|---|---|
+
+## Secondary screens
+<The screens the application type requires that nobody lists as features. Decide
+from context which apply — do not build all of them. Catalog and reasoning in
+skills/prototype/references/screen-craft.md.>
+
+| Screen | Applies? | Why / why not |
+|---|---|---|
+| Splash / launch | | |
+| Onboarding / first run | | |
+| Permission request | | |
+| Permission denied | | |
+| Sign in / sign up / forgot password | | |
+| Offline / no connection | | |
+| 404 / not found | | |
+| 403 / no access | | |
+| Session expired | | |
+| Settings / profile | | |
+| Form confirmation | | |
 
 ## State inventory
 <For every screen, which of these states apply and what each one shows. This

@@ -64,6 +64,38 @@ domain, same-sector product name, obvious trademark — flag conflicts plainly,
 say what you checked and what you did not, and **write into the document that
 this is not a legal clearance**.
 
+## Default to simple and contextual
+
+Unless the user explicitly asks for something elaborate, **the default is a
+simple, contextual brand** — and simple is the harder, better answer, not the
+lazy one.
+
+- **The mark is one idea, legible at 16px.** A single clear form — a letterform,
+  a contextual object reduced to its silhouette, a geometric relationship — that
+  someone can describe in one sentence after seeing it once. If the description
+  needs a comma, it is two ideas; drop one.
+- **Contextual beats abstract.** A mark that comes from the domain — the object
+  the product handles, the motion of its core loop, the shape of its category —
+  carries meaning that an abstract form has to be taught. Abstraction is a choice
+  you earn when the domain has no usable form, not the starting point.
+- **Few colors.** One primary plus neutrals is a complete palette. A second
+  accent needs a job. Gradients in a logo are a default to avoid
+  (`anti-generic.md`), not a sophistication.
+- **No effect carries the mark.** No gradient, no shadow, no glow, no bevel, no
+  transparency in the primary lockup. A mark that needs an effect to look
+  finished fails the moment it is engraved, faxed, embroidered, or printed in one
+  color — which is exactly what `logo-mono.svg` tests.
+- **Fewer elements, more decision.** Simplicity is what survives scaling down,
+  reproduction in one color, and a favicon. Complexity is what hides an
+  undecided idea.
+- **The name follows the same rule**: short, sayable, spellable after hearing it
+  once, connected to the positioning. Real words and real compounds beat invented
+  ones.
+
+When the user *does* ask for something more expressive — illustrative,
+ornamental, maximalist — do that instead. This is a default, not a restriction.
+Say in `design/brand.md` which one you applied.
+
 **The mark.** Generate it with `Generate(frameId, "svg", prompt)` into a frame
 of explicit size. Never hand-draw a logo out of paths and shapes — hand-built
 marks always look hand-built. **Generate once**, then build the five variants

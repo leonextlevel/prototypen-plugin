@@ -2,6 +2,12 @@
 
 Read this at phase 8 (audit) and phase 9 (organization review).
 
+Levels 1, 2 and 4 are checked against the canvas and the spec. Level 3 is checked
+against `design/design-direction.md`, `design/brand.md`, `anti-generic.md`, and
+**`screen-craft.md`** — the craft baseline the designer was given before drawing.
+Criteria 3.12–3.16 below are the auditable form of that file; when one fails,
+cite the section of `screen-craft.md` it comes from so the fix is unambiguous.
+
 Every criterion below gets a **binary verdict** — PASS or FAIL. Not a score, not
 "mostly", not "could be improved". A rubric that admits degrees gets everything
 graded B+ and nothing fixed.
@@ -76,7 +82,7 @@ meaningful node** — a screen frame, not the document.
 
 | # | Criterion | FAIL → |
 |---|---|---|
-| 3.1 | The screen matches the chosen direction's **testable personality sentence** — hold the sentence next to the image and answer yes or no | Name which of the nine direction items is violated; redo against it. |
+| 3.1 | The screen matches the chosen direction's **testable personality sentence** — hold the sentence next to the image and answer yes or no | Name which of the eleven direction items is violated; redo against it. |
 | 3.2 | The direction's **committed choice** is visible and nameable | If the auditor cannot name it from the picture, it is not there. |
 | 3.3 | Nothing on the `anti-generic.md` ban list appears unjustified | Cite the item and the direction file's silence on it; replace. |
 | 3.4 | Brand adherence — palette, type, tone of the microcopy, logo used per its rules | Cite the `brand.md` clause. |
@@ -87,6 +93,11 @@ meaningful node** — a screen frame, not the document.
 | 3.9 | Copy is in the **user's language**, and matches the brand's tone | Rewrite. English microcopy for a Portuguese-speaking user is a FAIL, not a detail. |
 | 3.10 | The screen holds up **at every declared viewport** — density, grid, navigation and information order suit the width it is for, rather than being the other viewport rescaled | Redesign for that viewport against its own density and grid from the direction file. |
 | 3.11 | The `Theme Check` screens render correctly in the non-default theme — no invisible text, no glaring accent, no surface collapsing into its background | Fix the theme's token values, then re-check. Never fix by hardcoding a color into the screen. |
+| 3.12 | **Navigation** matches the direction's declared system, is identical across every screen in the flow, shows the current location, and offers a working back affordance. Primary tasks reachable in two steps | Fix the structure, not the label. If the direction never declared a navigation system, that is a phase-4 failure — say so rather than inventing one at audit time. |
+| 3.13 | **Nothing touches a container edge.** Every screen, card, modal, cell and button gives its content inset on all four sides; mobile safe areas (status bar, notch, home indicator) are clear | Add the inset from the direction's spacing rules. A bottom-anchored button under the home indicator is a FAIL, not a near-miss. |
+| 3.14 | **Spacing comes from the scale, and proximity groups.** Related items sit closer than unrelated ones; gaps between groups are visibly larger than gaps within them; adjacent interactive elements have a gap | Uniform spacing between every child of a container is a defect — it means nothing was grouped. Apply the two-tier gap from the direction. |
+| 3.15 | **Alignment holds.** One dominant alignment edge; body text and forms ranged left, not centered; numeric columns right-aligned with matching headers; icons optically centered against their labels | Fix with layout, not by nudging. A centered paragraph is a FAIL. |
+| 3.16 | **Type sizing is legible and ranked**: body ≥16 on mobile, nothing readable below 12, line length 45–75 characters, no more than ~3 type sizes on a simple screen | Consolidate to the scale's steps. A new size needs a new job. |
 
 ## Level 4 — Completeness
 
@@ -106,6 +117,7 @@ thinks about while designing the happy path.
 
 | 4.8 | **Every declared viewport** has the flows and screens the spec lists for it |
 | 4.9 | **Every declared theme** has token coverage, and the `Theme Check` set exists |
+| 4.10 | **The secondary screens the context requires exist** — for a mobile app that means at least splash, first run, permission request *and* permission denied, and offline where a network is involved; for a web app 404, no-access and session-expired; for a marketing site 404 and form confirmation. Catalog in `screen-craft.md` |
 
 FAIL → build the missing state as a variant beside its screen, named per
 `canvas-structure.md`.

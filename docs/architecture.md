@@ -69,9 +69,33 @@ one phase and not at all for the other nine.
 | `brand.md` | when the brand phase runs, what a brand must define, the logo variants |
 | `design-direction.md` | the divergence axes, what a direction must declare, how to choose |
 | `anti-generic.md` | what is banned, and the boundary between visual and interaction |
+| `screen-craft.md` | the craft baseline — navigation, spacing, alignment, targets, secondary screens |
 | `canvas-structure.md` | how the Pencil document is organized and audited |
 | `audit-rubric.md` | every pass/fail criterion, at four levels |
 | `pencil-mcp.md` | the verified Pencil API and its failure modes |
+
+### Why there are two opposite reference files
+
+`anti-generic.md` and `screen-craft.md` pull in opposite directions on purpose,
+and together they define the shape of an acceptable design.
+
+`anti-generic.md` is a **ban list**: it says what not to reach for, and it exists
+because the model's defaults are the category average. `screen-craft.md` is a
+**baseline**: it says what every competent product designer does without being
+asked, and it exists because a model told only "be original" will happily break
+things that should not be broken.
+
+The line between them is the same one `anti-generic.md` draws internally:
+originality belongs to the palette, the type, the surface treatment and the
+composition; convention belongs to where things are and how they behave. Ignoring
+the first file produces a generic design; ignoring the second produces a design
+that is different and worse.
+
+`screen-craft.md` is also the plugin's main lever on **audit throughput**. Every
+rule in it has a matching criterion in `audit-rubric.md` (3.12–3.16, 4.10), and
+the designer reads it before drawing rather than meeting it for the first time in
+a finding. A standard handed over up front is far cheaper than the same standard
+discovered through three fix cycles.
 
 ### The agents
 

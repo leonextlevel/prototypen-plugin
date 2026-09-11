@@ -53,7 +53,7 @@ it is a slider, and the middle always wins by default.
 ## Step 3 — Each direction declares all of this
 
 A direction is not a mood board. It is a specification. Each of the three must
-state:
+state all eleven of these:
 
 1. **Name and one-sentence personality** — testable, not decorative.
    Testable: *"Looks like a well-set financial newspaper: information dense,
@@ -75,11 +75,18 @@ state:
    shadows that do nothing. Derive the dark values from the same concept, and
    state for each theme the contrast pairs that must hold — because a palette
    that passes AA in light routinely fails it in dark, and the audit checks both.
-5. **Target density** — stated concretely: base spacing unit, the spacing scale
-   derived from it, and roughly how much a primary view should hold. **Per
-   declared viewport**: density is the main thing that legitimately differs
-   between desktop and mobile, and stating one number for both means one of them
-   was not designed.
+5. **Target density and the spacing scale** — stated concretely: the base unit
+   (usually 4 or 8), the full scale derived from it, and roughly how much a
+   primary view should hold. **Per declared viewport**: density is the main thing
+   that legitimately differs between desktop and mobile, and stating one number
+   for both means one of them was not designed.
+
+   Also state the **application rules**, because a scale nobody knows how to
+   apply produces evenly-spaced mush: screen edge inset, card and modal padding,
+   button and input padding, the gap *within* a group and the larger gap
+   *between* groups, and the minimum gap between adjacent interactive elements.
+   Proximity is the cheapest hierarchy available and it only works if the two
+   gaps are actually different. Defaults and reasoning in `screen-craft.md`.
 6. **Grid** — columns, gutters, max widths, and the breakpoints that matter,
    **per declared viewport**, with the target width each assumes.
 7. **Edge treatment** — border radius (and where it varies and why), border
@@ -87,8 +94,25 @@ state:
    overlap. "Shadow" as the automatic answer is on the ban list.
 8. **Motion** — what moves, how fast, with what easing, and what deliberately
    does not move. "None, deliberately" is a valid and often good answer.
-9. **What this direction rejects** — the trade-off it accepts. A direction that
-   claims no cost has not committed to anything.
+9. **Navigation system, per viewport** — the structure, not the styling: which
+   pattern (bottom tab bar, sidebar, drawer, top nav, no chrome), how many
+   primary destinations it carries and what they are, how the current location is
+   shown, how back works, and where the primary action sits. Decide this here,
+   once, so it is identical on every screen of every flow.
+
+   This is the item most often skipped, and skipping it is expensive: navigation
+   invented per screen produces a prototype where each screen disagrees with the
+   last about where things live, and the audit catches it only after every screen
+   is drawn. Pattern-selection guidance by destination count and viewport is in
+   `screen-craft.md`.
+
+10. **Alignment posture** — the dominant alignment edge, whether display type is
+    centered or ranged left, how form labels sit relative to their fields, and how
+    numeric columns are treated. One decision here removes a hundred small ones
+    later.
+
+11. **What this direction rejects** — the trade-off it accepts. A direction that
+    claims no cost has not committed to anything.
 
 A direction that can only work in one theme, or only at one viewport, when both
 are in scope, is **not a candidate**. Discard it and generate another; the
@@ -119,7 +143,7 @@ professional", "I like it best". These are the default arguing for itself.
 
 Then record, in `design/design-direction.md`:
 
-- The full spec of the **chosen** direction (all nine items above).
+- The full spec of the **chosen** direction (all eleven items above).
 - **Why the other two were rejected**, against the stated criteria — one
   paragraph each. This is what stops a later round from quietly drifting back
   toward a rejected direction.

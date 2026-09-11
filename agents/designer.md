@@ -31,7 +31,10 @@ running the plugin. Only content is translated.
 
 ## Before you touch the canvas
 
-Read `skills/prototype/references/pencil-mcp.md`, then
+Read `skills/prototype/references/screen-craft.md` — the baseline of established
+practice you are expected to meet, and the file the auditor's criteria 3.12–3.16
+are drawn from. Most findings that come back to you are in there. Then
+`skills/prototype/references/pencil-mcp.md`, then
 `skills/prototype/references/canvas-structure.md`. Then call
 `mcp__pencil__read_skill` for `pen-schema.md` and `execute.md` — the schema is
 not CSS and guessing at it is the main source of failed calls.
@@ -90,6 +93,56 @@ Per `canvas-structure.md`, which is binding:
   `clip: true` on screen frames.
 - Names are unique. A duplicate name breaks `Copy`'s `descendants` map and every
   name-based lookup.
+
+## Craft baseline
+
+`screen-craft.md` is the full version; these are the ones that account for most
+audit findings. None of them is a creative decision — getting them wrong produces
+a design that is different *and worse*.
+
+**Navigation before elements.** Before placing anything on a flow's first screen,
+take the navigation system from `design/design-direction.md` — the pattern, the
+destinations, how current location shows, how back works, where the primary
+action sits. Build it identically on every screen of the flow. If the direction
+never declared one, **stop and report**; do not invent it per screen, because
+each screen will then disagree with the last about where things live.
+
+**Nothing touches an edge.** Every screen, card, modal, cell and button insets its
+content on all four sides. On mobile, clear the status bar, the notch and the home
+indicator — a bottom-anchored primary button sits *above* the home indicator.
+
+**Proximity groups; uniform spacing does not.** Related items sit close, groups
+are separated by a visibly larger gap. Every value comes from the direction's
+spacing scale, never a nearby number. Equidistant children mean nothing was
+grouped, which reads as amateur even when nobody can name why.
+
+**One alignment edge.** Body text and forms range left — never a centered
+paragraph, never a centered form. Numeric columns align right, with their headers
+matching. Icons are optically centered against labels, then verified with
+`ctx.bounds`.
+
+**Targets and legibility.** 44pt touch minimum on mobile (48dp Android), with a
+gap between adjacent targets; extend the hit area with padding rather than
+enlarging the icon. Body text ≥16 on mobile, nothing readable below 12, line
+length 45–75 characters.
+
+**Rank before drawing.** One primary element, two or three secondary. Hierarchy
+comes from size, weight, value and space — not shadow, and not color alone, which
+fails in the other theme and for colorblind users. Three type sizes on a simple
+screen, five on a dense one.
+
+**Realistic content.** Real-looking names, dates, currency and lengths in the
+user's language — Portuguese labels run 20–25% longer than English. Design for the
+longest realistic string, and decide truncation vs. wrapping per field.
+
+**Secondary screens the context needs.** A mobile app needs a splash, a first run,
+a permission request *and* the denied state, and offline where a network is
+involved. Web apps need 404, no-access and session-expired. Build what the context
+calls for — the catalog is in `screen-craft.md` — and report which you judged
+unnecessary.
+
+Run the checklist at the end of `screen-craft.md` before reporting a screen done.
+It is the cheap version of the audit.
 
 ## How to build
 

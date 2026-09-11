@@ -400,3 +400,76 @@ configuration. Later commits use the configured identity.
 **Left alone:** the author on those four existing commits. Rewriting history is
 the repository owner's call, and the repo has not been pushed, so `git rebase`
 or `git filter-branch` remains available if the mismatch matters.
+
+---
+
+## 2026-09-10 — A craft baseline, paired one-to-one with the rubric
+
+**Decided:** added `skills/prototype/references/screen-craft.md` — navigation
+patterns by destination count and viewport, spacing application (edge insets,
+component padding, proximity grouping, gaps between interactive elements),
+alignment posture, target sizes and legibility floors, hierarchy in practice,
+the secondary-screen catalog by application type, and a pre-report checklist.
+Read by the `designer` on every task and by the `auditor` when judging.
+
+**Why a new file rather than more rules in the agent prompt:** the goal was fewer
+audit failures, and the mechanism that actually produces that is **giving the
+designer the standard before it draws instead of after**. That only works if the
+standard and the rubric are the same thing said twice — so every rule in
+`screen-craft.md` has a matching criterion (3.12–3.16 navigation, edge insets,
+proximity spacing, alignment, type sizing; 4.10 secondary screens), and the
+auditor is instructed to cite the section a finding comes from. A rule that lives
+only in an agent prompt cannot be audited against; a criterion that exists only
+in the rubric is a trap.
+
+**Why it does not contradict `anti-generic.md`:** the two files pull opposite
+ways on purpose. The ban list restricts the palette, type, surface and
+composition; the baseline fixes where things are and how they behave. That is the
+same line the ban list already drew internally between visual and interaction
+convention. Ignoring the first produces a generic design; ignoring the second
+produces one that is different and worse.
+
+**Navigation and spacing were promoted into the direction file**, which now
+declares eleven items instead of nine. Both were previously implicit and both are
+expensive when left to the screen phase: navigation invented per screen means
+every screen disagrees with the last about where things live, and the audit only
+catches it after all of them are drawn. A spacing *scale* without stated
+application rules produces evenly-spaced mush — proximity is the cheapest
+hierarchy available and it only works when the within-group and between-group
+gaps actually differ.
+
+**Secondary screens got a home.** Splash, first run, permission request *and*
+denied, offline, 404, no-access, session-expired, form confirmation — nobody
+lists these as features, so nobody notices they are missing until they are. The
+catalog is keyed by application type, which `discover` now asks for explicitly,
+and the spec template carries an applies/why-not table so the decision is
+recorded rather than silently skipped.
+
+**Numbers used are platform conventions**, stated as such: 44pt touch target
+(Apple HIG), 48dp (Material), 24×24 CSS px (WCAG 2.2 AA minimum target size),
+16px mobile body text, 45–75 character line length, 4/8-based spacing scales.
+The direction file may override them; they are the fallback shape, not a
+substitute for a decision.
+
+---
+
+## 2026-09-10 — Simple and contextual is the brand default
+
+**Decided:** `brand-designer` defaults to a simple, contextual brand unless the
+user explicitly asks for something more elaborate, and records in
+`design/brand.md` which of the two it applied.
+
+**Why:** left unspecified, a generative brand phase drifts toward visual
+complexity, because complexity reads as effort. It is the wrong instinct: a mark
+that survives a favicon, one-color engraving and a 16px header is the one that
+had a single clear idea, and complexity is usually where an undecided idea hides.
+
+Stated as concrete constraints rather than as "keep it simple": one idea legible
+at 16px, describable in a sentence without a comma; contextual forms preferred
+over abstract ones, because abstraction has to be taught while a domain form
+carries meaning; one primary color plus neutrals, with a second accent needing a
+job; and no gradient, shadow, glow, bevel or transparency in the primary lockup —
+which is exactly what the required `logo-mono.svg` variant already tests for.
+
+**It is a default, not a restriction.** When the user asks for illustrative,
+ornamental or maximalist, the agent does that instead.

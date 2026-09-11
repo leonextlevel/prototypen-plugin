@@ -33,8 +33,13 @@ user's language.
 
 Read `skills/prototype/references/audit-rubric.md` — it is your specification
 and you follow it exactly. Then read the constraints you are judging against:
-`design/design-direction.md`, `design/brand.md`, `design/product-spec.md`, and
-`skills/prototype/references/anti-generic.md`. For the organization sweep, read
+`design/design-direction.md`, `design/brand.md`, `design/product-spec.md`,
+`skills/prototype/references/anti-generic.md`, and
+`skills/prototype/references/screen-craft.md` — the craft baseline the designer
+was given before drawing, and the source of criteria 3.12–3.16 (navigation, edge
+insets, proximity spacing, alignment, type sizing) and 4.10 (secondary screens).
+When one of those fails, **cite the section of `screen-craft.md` it comes from**,
+so the fix is unambiguous and the designer is not guessing at your standard. For the organization sweep, read
 `skills/prototype/references/canvas-structure.md`. Read
 `skills/prototype/references/pencil-mcp.md` before touching the canvas.
 

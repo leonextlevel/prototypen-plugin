@@ -123,6 +123,13 @@ text, permission denied). The state inventory here is what the completeness audi
 in phase 8 checks against — if a state is missing from the spec, nobody will
 notice it is missing from the canvas.
 
+The inventory covers the flows **and the secondary screens the context requires**
+— a mobile app needs a splash, a first run, a permission request and its denied
+state; a web app needs 404, no-access and session-expired; a marketing site needs
+404 and a form confirmation. Nobody lists these as features, so nobody notices
+they are missing until they are. The catalog is in `references/screen-craft.md`;
+decide from context which apply rather than building all of them.
+
 Ask nothing you can decide. Where the request is silent, decide, and record the
 assumption in an "Assumptions" section of the spec.
 
@@ -164,10 +171,20 @@ Read `references/design-direction.md` before running this phase, and
 Read the Targets table first. Pick two divergence axes for this project. Produce
 three directions placed at genuinely different points on them, each one specified
 for **every declared viewport and theme** — a direction that only works at one
-viewport, or in one theme, is not a candidate. Each direction declares a type pairing and a
-modular scale with its stated ratio, a palette derived from a concept, a target
-density, a grid, a border/radius/shadow treatment, a motion treatment, and a
-one-sentence testable personality.
+viewport, or in one theme, is not a candidate. Each direction declares eleven
+things: a type pairing, a modular scale with its stated ratio, a palette derived
+from a concept, a target density with its spacing scale, a grid, a
+border/radius/shadow treatment, a motion treatment, a **navigation system per
+viewport**, an **alignment posture**, what it rejects, and a one-sentence testable
+personality.
+
+The last two additions are the ones most often skipped and the most expensive to
+skip. Navigation decided here once — pattern, destinations, current-location
+indicator, back behavior, primary action placement — is executed identically
+everywhere; left undecided, every screen invents its own and the audit catches it
+only after all of them are drawn. Same for the spacing application rules (edge
+inset, component padding, gap within a group vs. between groups): a scale nobody
+knows how to apply produces evenly-spaced mush.
 
 Then choose one, in writing, against criteria tied to the audience and the job —
 not to taste. If none of the three can live with the brand, the directions are
@@ -219,6 +236,13 @@ representative screens (the densest, one carrying imagery, one with an error or
 destructive state) in the design-system region.
 
 Screens go inside their flow's box in navigation order.
+
+Each designer reads `references/screen-craft.md` first — the baseline of
+established practice, and the source of audit criteria 3.12–3.16. Building the
+navigation system before any element, insetting content from every container
+edge, grouping by proximity instead of spacing uniformly, and holding one
+alignment edge are what most findings would otherwise be about. Handing the
+designer that standard up front is cheaper than discovering it in the audit.
 
 ### 8 — Audit
 
@@ -273,6 +297,7 @@ Read these when the phase that needs them starts — not up front, not all at on
 | `references/brand.md` | phase 3, and any time the user brings an existing brand |
 | `references/design-direction.md` | phase 4 |
 | `references/anti-generic.md` | phase 4, phase 6, and every audit |
+| `references/screen-craft.md` | phases 6 and 7, and every audit fix |
 | `references/canvas-structure.md` | phase 5, and phase 9 always |
 | `references/audit-rubric.md` | phases 8 and 9 |
 | `references/pencil-mcp.md` | before the first Pencil call of the session |
