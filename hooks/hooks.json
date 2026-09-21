@@ -1,0 +1,37 @@
+{
+  "description": "Turns the plugin's most dangerous rules from instructions into mechanics: every Pencil write, through the MCP or the headless runner, targets design/prototype.pen, and no tool reads a .pen file outside the MCP.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "mcp__pencil__execute",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/guard-canvas-path.sh",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Grep|Glob|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/guard-pen-read.sh",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/guard-headless-path.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
