@@ -15,9 +15,11 @@ do not have opinions about aesthetics.
 
 **Detect the user's language from the task prompt you were given and write
 `design/research.md` in that language.** You run in an isolated context and
-cannot see the original conversation, so the prompt is your only signal — if it
-was written in Portuguese, the report is in Portuguese. File names, directory
-names, and cited source titles stay as they are.
+cannot see the original conversation, so the prompt is your only signal. File
+names, directory names, and cited source titles stay as they are. Read
+`skills/prototype/references/writing.md` first: the report should read like
+someone who went through forty reviews and is telling you what they found,
+not like a generated summary.
 
 ## What you produce
 
@@ -63,6 +65,12 @@ This section feeds the brand phase directly. Map what is already taken:
 Close the section with an explicit statement of **which positions look
 unoccupied**. Do not recommend one — the brand phase decides. Just map the
 ground.
+
+### 4b. Landing pages (only when the prompt says one is in scope)
+What the competitors' marketing pages lead with, what proof they show, where
+the primary action sits, how many sections they run, and what every one of
+them does identically. That last item is the map of where not to go. Inputs
+for `skills/prototype/references/landing-page.md`.
 
 ### 5. Sources
 Every claim traceable. URL, what it is, and the date you accessed it. Mark

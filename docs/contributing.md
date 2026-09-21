@@ -30,11 +30,14 @@ is true:
    as sharp as the constraint it checks. Fix what
    `references/design-direction.md` *requires* a direction to declare.
 
-The same reasoning governs adding a **skill**. There are two, and they are split
-on whether asking the user a question is allowed — before generation it is the
-highest-leverage move, during generation it costs the run its autonomy. A third
-skill needs a seam that real. A new *phase* of the pipeline is not one; that goes
-in `prototype`'s body or a reference file.
+The same reasoning governs adding a **skill**. There are five, split on two
+seams: whether asking the user is allowed (`discover` and `brand` ask;
+`prototype` decides and records), and what is consumed and produced
+(`prototype` makes the canvas and its documents from a spec; `finalize`
+consolidates them once the rounds are over; `roadmap` turns the consolidated
+folder into a plan for a different audience, in `docs/`). A sixth skill needs
+a seam that real. A new *phase* of the pipeline is not one; that goes in
+`prototype`'s body or a reference file.
 
 Another agent adds a context, a handoff, and a place for instructions to
 contradict each other. It does not add judgment by itself. **The test for a new
@@ -49,7 +52,20 @@ it: same input, same question, one more handoff.
 
 The same applies to the skill body. If you are about to add fifteen lines of
 detail to `SKILL.md`, they belong in a reference file with a pointer from the
-phase that needs them. The body stays under 500 lines and stays skimmable.
+phase that needs them. The body stays under 300 lines and stays skimmable.
+The same for the agents: an agent reads its references on every task, so its
+file says what to read and what it is judged on, and does not restate the
+reference. Restating was how `designer.md` reached 300 lines, and the
+restated rules drifted from the originals.
+
+## Hooks are for rules a script can check
+
+A rule becomes a hook when it is **mechanically checkable from the tool call
+alone** and its violation is expensive: the canvas path, reading a `.pen`.
+Judgment never goes in a hook — a hook that tried to check design quality would
+be the auditor with no context. Test a hook change by piping a fake call
+(`docs/development.md`); the four cases to cover are wrong path, right path,
+relative path, and missing file.
 
 ## Run the evals before and after anything significant
 
@@ -66,7 +82,10 @@ Run **all** the reference ideas — the dense data app, the landing page, the
 mobile onboarding flow, and the incremental round — after any change to
 `SKILL.md`, a reference file, or an agent prompt. Not after a typo; after
 anything that changes behavior. Read the outputs against the general checks in
-`evals/README.md`.
+`evals/README.md`, and **copy the exported `design/screens/` into
+`evals/baselines/<case>/<date>/`** so the next change has something to diff
+against. Tuning to the last case is invisible without a previous case to look
+at.
 
 ## Structural rules that cannot be violated
 
@@ -82,10 +101,11 @@ catch.
 - **Kebab-case** for every directory and file name.
 - **The plugin's own content is English** — SKILL.md, references, agent prompts,
   templates, docs. What the plugin *produces* follows the user's language.
-- **The language instruction must appear in every agent file.** Subagents run in
-  isolated contexts and never see the user's original message. Drop it from one
-  agent and that agent alone starts answering in English. This is easy to break
-  and invisible until someone runs the plugin in another language.
+- **The language instruction and the `writing.md` pointer must appear in
+  every agent file.** Subagents run in isolated contexts and never see the
+  user's original message. Drop either from one agent and that agent alone
+  starts answering in English, or in generated-sounding prose. This is easy
+  to break and invisible until someone runs the plugin in another language.
 - **Never invent a Pencil tool or signature.** `references/pencil-mcp.md` is
   verified against the live server; anything unconfirmed is marked **TO VERIFY**
   and must stay marked until it is actually checked. Verify with
