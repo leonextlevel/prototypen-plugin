@@ -16,14 +16,22 @@ whoever hit the problem.
 
 | Role | May raise | May decide |
 |---|---|---|
-| `designer` | a missing definition; something unbuildable as specified; a screen or state the spec did not list | nothing — it cannot write files, by design |
+| `designer` | a missing definition; something unbuildable as specified; a screen or state the spec did not list | a **component** the screen needs and the system lacks: it builds it from existing tokens in the Design System and reports it (ratified in one entry at the end of the phase). Nothing else — it cannot write files, by design |
 | `layout-reviewer` | an ambiguous composition intent; a fix that needs restructuring | nothing beyond mechanical geometry |
 | `auditor` | any failure it classifies as `direction` or `spec` rather than `execution` | nothing — it never fixes |
 | `brand-designer` | a brand constraint that no direction can satisfy | nothing after its phase |
 | **the skill** | — | **everything** |
 
 The orchestrator decides. Not the user — this is an unattended run and the
-change log is how the user reviews the decisions afterward. Not the agent that
+change log is how the user reviews the decisions afterward. The one
+exception is **adjustment mode**, a request after a run has reached
+handoff: the user is present and the change is theirs, so a conflict with
+an existing rule, or an ambiguity, is a question to them, from the
+orchestrator or from the designer through it (`adjustment-verification.md`
+§0a), and the answer is recorded here as an `amend` entry or as an
+exception entry, in their words. Inside the autonomous run, including its
+fix cycles, this file applies unchanged: agents raise, the orchestrator
+decides, nobody asks. Not the agent that
 hit the problem — the agent with the problem is the one most motivated to solve
 it the easy way.
 
@@ -32,9 +40,21 @@ it the easy way.
 ### 1. Missing definition — *add*
 
 Something needed that the owning artifact does not define: a token (a state
-color that was never specified), a component (a pattern with no precedent in
-the system), a screen or state (discovered while building the flow), a
-secondary screen the context turned out to need.
+color that was never specified), a screen or state (discovered while building
+the flow), a secondary screen the context turned out to need. A missing
+**component** is not raised: the designer builds it from existing tokens and
+the catalog's shape and reports it; you ratify the phase's additions in one
+`add` entry when all designers have reported, and reject one only when it
+duplicates an existing component or contradicts the direction.
+
+**Propagation happens once.** Ratified components are propagated into the
+other flows in one batch after the phase's last designer reports, and only
+where a component changed shape (a new one that no other flow uses needs no
+propagation). A run has at most **two system rounds** after phase 6; a third
+means the phase-5 component inventory was wrong, and the fix is to redo the
+inventory, not to propagate again. In the brasario run, nine system rounds
+and two full propagations across twelve flows were the single largest cost
+after the state explosion.
 
 **Owner artifact:** tokens and components → `design/design-direction.md` (and
 then the canvas variables and design-system region); screens and states →
@@ -136,7 +156,9 @@ last:
 
 The log is the user's window into a run that did not stop to ask. Every entry
 should let them disagree with a specific decision and know exactly what to
-revert.
+revert. Each entry also gets one line in `design/run.md` under Changes (date —
+kind — title — commit), so the run summary carries the decisions without the
+reader opening this file.
 
 ## What is not a change
 

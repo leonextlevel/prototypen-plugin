@@ -19,6 +19,15 @@ an addition rather than as something the brand already said.
 The condition is independent of mode: a project that already has research,
 direction, and screens but no brand file still runs this phase.
 
+There is a third path. When the spec's Targets table says the brand is **to
+be explored**, the user wants to see candidates and choose before the
+prototype commits to one. That is `/prototypen:brand`, an interactive skill
+that runs the brand designer in candidate mode (two or three candidates side
+by side on the canvas, at most three rounds) and writes the same
+`design/brand.md`. Once it has run, this phase is skipped like any supplied
+brand. The pipeline's Step 0 mentions the pending exploration in its one
+question if the user starts `/prototypen:prototype` before running it.
+
 ## Order is mandatory: research first, brand second
 
 `design/research.md` must exist before this phase starts.
@@ -92,11 +101,22 @@ Also document, in `design/brand.md`:
   background, don't rebuild the lockup by retyping the name.
 
 **Production.** Generate the mark with `Generate(frameId, "svg", prompt)` on the
-canvas — never hand-draw a logo out of paths and shapes; hand-built marks always
-look hand-built. Generate **once**, then build the variants from that mark
-rather than generating five times: five generations produce five different
-logos. Generation is async; see the polling rules in `pencil-mcp.md`. Note the
-open question there about exporting SVG source.
+canvas — never hand-draw a logo out of paths and shapes while generation
+works; hand-built marks always look hand-built. Generate **once**, then
+build the variants from that mark rather than generating five times: five
+generations produce five different logos. Generation is async; see the
+polling rules in `pencil-mcp.md`.
+
+**When generation is unavailable** (the account is out of credits, the
+response names a quota or a plan limit, or a second attempt lands empty),
+follow the manual path in `pencil-mcp.md`: a geometric mark from
+primitives, the SVG files written by hand from the same primitives, one
+note in the run log and in `design/brand.md` saying the mark was built
+manually and can be regenerated. The concept adapts to the tool: a
+monogram, a ring, a cut shape, not an illustration. What does not change
+is the rest of this file: the name, the positioning, the palette, the type
+and the misuse rules are decided the same way, and the variants are still
+five.
 
 ## The brand is a constraint on phase 4
 

@@ -53,7 +53,7 @@ it is a slider, and the middle always wins by default.
 ## Step 3 — Each direction declares all of this
 
 A direction is not a mood board. It is a specification. Each of the three must
-state all eleven of these:
+state all twelve of these:
 
 1. **Name and one-sentence personality** — testable, not decorative.
    Testable: *"Looks like a well-set financial newspaper: information dense,
@@ -61,7 +61,14 @@ state all eleven of these:
    to that sentence and say yes or no.
    Not testable: *"Modern, clean, and friendly."*
 2. **Type pairing** — two named families with a stated reason for the pairing,
-   and what each is for. Both must pass `anti-generic.md`.
+   and what each is for. Both must pass `anti-generic.md`, and **both must
+   exist where the canvas renders**: pen.dev serves Google Fonts and nothing
+   else unless the user supplied font files. A family that is not on Google
+   Fonts falls back silently to a default sans — no error, and the screenshot
+   the auditor judges shows the fallback, not the direction. Name the exact
+   Google Fonts family (and the weights it ships; a family with only 400 and
+   700 cannot carry a "medium" step). The audit checks that the rendered face
+   is the declared one (criterion 3.24).
 3. **Modular scale** — the ratio, stated (1.2 minor third, 1.25 major third,
    1.333 perfect fourth, 1.5 …), the base size, and the resulting steps. Sizes
    are derived from the ratio, not picked one at a time.
@@ -111,7 +118,17 @@ state all eleven of these:
     numeric columns are treated. One decision here removes a hundred small ones
     later.
 
-11. **What this direction rejects** — the trade-off it accepts. A direction that
+11. **Iconography** — one library from the four the canvas offers (`lucide`,
+    `feather`, `Material Symbols Outlined | Rounded | Sharp`, `phosphor`), one
+    weight where the library is variable, and a size scale tied to the type
+    scale (typically three sizes: inline with body text, control, and
+    display). State whether icons are filled or stroked and whether they ever
+    carry color other than the text color beside them. Two libraries on one
+    screen, or the same glyph at four sizes, is the most recognizable AI tell
+    after the type and the palette, and no other item catches it. Audited as
+    criterion 3.25.
+
+12. **What this direction rejects** — the trade-off it accepts. A direction that
     claims no cost has not committed to anything.
 
 A direction that can only work in one theme, or only at one viewport, when both
@@ -122,6 +139,40 @@ the way to handoff.
 Every direction must be compatible with `design/brand.md` if a brand exists.
 **If none of the three can live with the brand, the directions are wrong — not
 the brand.** Regenerate them.
+
+## Step 3b — The token inventory the chosen direction must fill
+
+Items 2–8 and 11 above are decisions; phase 6 turns them into variables. What
+used to go wrong between the two is **coverage**: a direction that names a
+palette "from the concept of aged ledger paper" and stops there leaves the
+designer without a pressed-accent color, a focus ring, a warning surface, or an
+elevated panel — and each gap is a stop-and-report, a change decision, and a
+propagation, in the middle of a screen.
+
+So the chosen direction fills **every role in this table**, with a value per
+declared theme for every color. A role the product genuinely never needs is
+marked `—` with a reason, not left out. Phase 6 writes these names verbatim as
+variables; criterion 1.11 fails a run in which any is missing.
+
+| Group | Required roles | Notes |
+|---|---|---|
+| **Surface** | `color-surface`, `color-surface-raised`, `color-surface-overlay`, `color-surface-sunken`, `color-scrim` | page · card/panel · modal/sheet/popover · input/well · the veil behind an overlay |
+| **Text** | `color-text-primary`, `color-text-secondary`, `color-text-tertiary`, `color-text-on-accent`, `color-text-link` | tertiary is placeholder and disabled |
+| **Accent** | `color-accent`, `color-accent-hover`, `color-accent-pressed`, `color-accent-subtle` | subtle is the tinted surface behind a selected row or chip |
+| **Border** | `color-border`, `color-border-strong`, `color-border-focus` | focus is the ring; it must pass 3:1 against the surface it sits on in every theme |
+| **Semantic** | for each of `success`, `warning`, `danger`, `info`: `color-<x>`, `color-<x>-text`, `color-<x>-surface` | the badge/button color, text on the surface, the tinted surface |
+| **Type** | `font-display`, `font-body`, (`font-mono` if any code/number column), `weight-regular`, `weight-medium`, `weight-bold`, `leading-body`, `leading-display` | `weight-*` as strings the family ships |
+| **Type scale** | `size-1` … `size-N` from the modular scale, plus a role map | the role map says which step is body, caption, control label, heading levels |
+| **Spacing** | `space-1` … `space-N` from the base unit | plus the application rules from item 5, written as which token is the edge inset, the card padding, the within-group gap, the between-group gap |
+| **Shape** | `radius-sm`, `radius-md`, `radius-lg`, `radius-full`, `border-width`, `border-width-strong` | the direction says where each radius applies |
+| **Depth** | `shadow-*` only if item 7 uses shadow; otherwise `—` | |
+| **Motion** | `duration-fast`, `duration-base`, `easing` | as numbers (ms) and a string; `—` if motion is "none, deliberately" |
+| **Icon** | `icon-size-sm`, `icon-size-md`, `icon-size-lg`, `icon-library`, `icon-weight` | from item 11 |
+| **Layout** | per viewport: `grid-columns-<vp>`, `grid-gutter-<vp>`, `content-max-<vp>`, `screen-width-<vp>` | from item 6 |
+
+A direction may add roles; it may not rename these. Stable names are what let
+an incremental round, a different user, and the exported `tokens.css` all find
+the same thing.
 
 ## Step 4 — Choose, in writing
 
@@ -143,7 +194,8 @@ professional", "I like it best". These are the default arguing for itself.
 
 Then record, in `design/design-direction.md`:
 
-- The full spec of the **chosen** direction (all eleven items above).
+- The full spec of the **chosen** direction (all twelve items above), and the
+  **filled token inventory** from Step 3b.
 - **Why the other two were rejected**, against the stated criteria — one
   paragraph each. This is what stops a later round from quietly drifting back
   toward a rejected direction.
@@ -154,7 +206,9 @@ Then record, in `design/design-direction.md`:
 
 ## Downstream
 
-Phase 6 turns items 3–8 into `.pen` variables verbatim. If a token is needed
-later that this file does not define, the designer **stops and reports** — the
-direction file is amended by decision, never extended by improvisation in the
-middle of a screen.
+Phase 6 turns the filled token inventory (Step 3b) into `.pen` variables
+verbatim, names included. If a token is needed later that this file does not
+define, the designer **stops and reports** — the direction file is amended by
+decision, never extended by improvisation in the middle of a screen. With the
+inventory filled, that should be rare: the most common gaps (a pressed accent, a
+focus ring, a warning surface, an overlay surface) are already required roles.

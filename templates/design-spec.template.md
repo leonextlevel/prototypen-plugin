@@ -18,12 +18,28 @@ sets and which theme values exist.>
 | **Theme** | | |
 
 ## How to read this
-<Where the canvas file is, how the regions are organized, and how a name here
-maps to a node there.>
+<Where the canvas file is and how it is organized: one region per flow, one
+column group per screen, the screen's versions (viewports, then theme copies)
+side by side in the base row, its specific states and the overlays it is the
+first to open in the rows below; the generic states (loading, empty, error,
+long list, long text, first use, permission denied) live once per screen
+archetype as exemplars in `Design System / Section / States`, and every
+screen of that archetype inherits them. How a name here maps to a node
+there. Then the exported deliverables for readers
+without pen.dev: `design/screens/<flow>/*.png` (one per screen version and
+state; unversioned, regenerated on every handoff),
+`design/screens/<flow>/index.html`, `design/screens/design-system/`,
+`design/tokens.json` (W3C Design Tokens, all themes), `design/tokens.css`.>
+
+## Run summary
+<From design/run.md: mode, branch, which phases ran and which were skipped and
+why, and every change decision from design/changes.md by title and commit —
+so the reader knows what was decided without opening the log.>
 
 ## Tokens
 <Every design token, with its .pen variable name and its intended name in code.
-Themed values shown per theme.>
+Values live in `design/tokens.json`; this section maps names and states use.
+Names are the inventory names from design-direction.md, verbatim.>
 
 ### Color
 | Canvas variable | Code name | Light | Dark | Use |
@@ -56,7 +72,18 @@ implementation needs. Include the canvas node name so it can be found.>
 - **Behavior the canvas cannot show:** <Focus handling, keyboard interaction, truncation, responsive collapse.>
 
 ## Screens
-| Flow | Screen | Viewport | Canvas node | States built | Notes |
+<One row per screen version, generated from the canvas by the snippet in
+`skills/prototype/references/handoff.md`, never typed by hand. Then the
+state exemplars, one row each.>
+
+| Flow | Screen | Version | Canvas node | PNG |
+|---|---|---|---|---|
+
+### State exemplars
+<One row per exemplar in `Section / States`: archetype, state, viewport, node,
+PNG, and which screens inherit it (from the spec's generic-state table).>
+
+| Archetype | State | Viewport | Canvas node | PNG | Inherited by |
 |---|---|---|---|---|---|
 
 ## Navigation map
@@ -84,8 +111,9 @@ would have in the prototype.>
 - **Responsive behavior:** <What reflows, what collapses, what hides, at which breakpoints.>
 - **Motion:** <What animates, duration, easing, and what must not animate.>
 - **Copy tone:** <The rules for writing new strings, from design/brand.md.>
-- **Accessibility:** <Contrast decisions, touch target minimums, anything that constrains implementation.>
+- **Accessibility:** <Contrast decisions, touch target minimums, the focus ring token and where it applies, anything that constrains implementation.>
+- **Typography and icons:** <The Google Fonts families and weights to load; the icon library, weight and sizes — so the implementation renders what the canvas rendered.>
 
 ## Open findings
-<Carried over from the latest audit report: what failed three fix cycles and was
+<Carried over from the latest audit report: what failed two fix cycles and was
 left unresolved, and what a human needs to decide.>

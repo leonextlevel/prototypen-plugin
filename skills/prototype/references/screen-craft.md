@@ -1,7 +1,8 @@
 # Screen craft
 
 Read this before phase 7, and again before applying audit fixes. The `designer`
-agent reads it on every task.
+reads `designer-brief.md`, which condenses this file, and opens a section here
+when a specific question comes up.
 
 This is the **baseline of established practice** — the things a competent product
 designer does without being asked, and the things that fail an audit when they
@@ -210,8 +211,9 @@ first-run empty workspace.
 
 ### Marketing site
 
-404, form confirmation / thank-you, cookie or consent notice where the
-jurisdiction demands it, and the legal pages the footer links to.
+404, form confirmation / thank-you, the error on submit, cookie or consent
+notice where the jurisdiction demands it, and the legal pages the footer
+links to. The page itself is structured by the study in `landing-page.md`.
 
 **Decide from context, do not build all of them.** A single-purpose internal tool
 with SSO does not need a sign-up screen. State in the audit which secondary
@@ -223,7 +225,9 @@ screens the context called for and which were built.
 
 - Use **realistic content in the user's language** — real-looking names, dates,
   currency, addresses, and lengths for that locale. Lorem ipsum hides every
-  layout problem it would otherwise reveal.
+  layout problem it would otherwise reveal. Microcopy follows `writing.md`
+  and the brand's tone: short, plain, no dashes or exclamation marks in UI
+  text.
 - Design for the **longest realistic string**, not the convenient one. Names
   wrap, labels in Portuguese run ~20–25% longer than English, and numbers get
   large.
@@ -241,7 +245,7 @@ for judgment — does this match the direction, is the hierarchy right, does the
 committed choice show. It is not for catching a label 3px off its icon or a card
 that overlaps its neighbor. Those are yours to catch, and catching them here
 costs one `Get` and one screenshot; catching them in the audit costs a full fix
-cycle out of the three each screen gets.
+cycle out of the two each screen gets.
 
 This is a **self-review of the obvious**, and it is deliberately mechanical. It
 does not replace the isolated audit — an agent cannot judge its own taste — but
@@ -300,7 +304,14 @@ it:
       other screens; current location visible; back available.
 - [ ] Every row, section and state the spec lists is visible — the frame is
       content-height, nothing was clipped or dropped to fit a device size.
-- [ ] Every state from the spec exists as a named variant.
+- [ ] Every **specific** state the spec lists for this screen exists as a
+      named variant in its own row of the screen's group; no generic state
+      (loading, empty, error, long list, long text, first use) was drawn as a
+      row, those are the exemplars in `Section / States`; the overlay this
+      screen is the first to open is shown in context in its row; every
+      version of the screen sits in the base row, side by side
+      (`canvas-structure.md` §3b, §4).
+- [ ] Every `icon` node is from the direction's library, at a declared size.
 - [ ] Every action from the "forgotten actions" list in `component-catalog.md`
       that applies is present; every destructive one is behind a modal.
 - [ ] Content is realistic, in the user's language, at realistic length.
@@ -323,7 +334,10 @@ When the last screen of a flow is done, review the **flow**, not the screens:
    map names that is not on the canvas, any screen on the canvas that is not in
    the map — fix it or report it. This is the check that prevents orphan screens
    and dead ends, and the auditor will repeat it.
-4. **Nothing overlaps another screen**, and the gaps between screens are equal.
+4. **Nothing overlaps another screen**, the gaps are the region's, and every
+   group reads top-down as one screen: base row, then its states, then its
+   overlays, each row's versions top-aligned; nothing of one screen's in
+   another's group.
 5. Fix, and then report — including the screens you left open items on.
 
 ### What this is not
