@@ -19,6 +19,14 @@ project's presentation; this is the operational detail behind it.
    [decisions.md](decisions.md).
 3. **A git repository** in the project being designed. The pipeline commits
    after every phase, and that is what makes phase rollback possible.
+4. **Pre-approved permissions**, or auto mode — the allowlist is in
+   [usage.md](usage.md). An unattended run that stops at a permission prompt is
+   not unattended.
+5. **The pen.dev CLI** (`npm install -g @pen.dev/cli`, `pen login`), which
+   `scripts/pen-run.sh` and `scripts/pen-save.sh` call. Headless runs need
+   nothing else; app mode still needs the MCP.
+6. **`jq` or `python3`** on `PATH`, for the hooks. Without either, the guards
+   log a warning and allow — the rules still hold, but only as instructions.
 
 ## Installing
 
@@ -36,15 +44,8 @@ The path form must look like a path — `./prototypen-plugin` or an absolute pat
 A bare `.` is rejected. Once pushed to GitHub, `claude plugin marketplace add
 <owner>/<repo>` works from anywhere and is the form to give other people.
 
-Verify with `claude plugin list`. The installed version reads as a commit SHA:
-
-```
-❯ prototypen@prototypen
-  Version: 7ce29d3ac88b
-```
-
-That is the intended behavior of omitting `version` — see Validating, below.
-`claude plugin update prototypen@prototypen` pulls the newer commit.
+Verify with `claude plugin list`; `claude plugin update prototypen@prototypen`
+pulls the newer commit.
 
 **Both manifests validate independently:**
 
@@ -64,13 +65,16 @@ cd ~/projects/my-product
 claude --plugin-dir /home/leandro/projects/personal/prototypen-plugin
 ```
 
-Two skills become available, both invocable by name and both able to trigger
-from a plain request:
+Five skills become available, invocable by name and able to trigger from a
+plain request:
 
 | | |
 |---|---|
 | `/prototypen:discover` | interactive, collects requirements, writes `design/product-spec.md`, stops |
+| `/prototypen:brand` | interactive, brand candidates side by side on the canvas, writes `design/brand.md`, stops |
 | `/prototypen:prototype` | the unattended pipeline, phases 1–10 |
+| `/prototypen:finalize` | consolidates `design/` after the last round, writes `design/README.md` |
+| `/prototypen:roadmap` | the business roadmap under `docs/`, from a finalized design |
 
 Plus five agents: `prototypen:researcher`, `prototypen:brand-designer`,
 `prototypen:designer`, `prototypen:layout-reviewer`, `prototypen:auditor`.
@@ -80,8 +84,39 @@ Plus five agents: `prototypen:researcher`, `prototypen:brand-designer`,
 `skills/*/SKILL.md` and everything under `references/` is read fresh on each use
 — **edits apply immediately**.
 
-Changes to `agents/*.md`, `.claude-plugin/plugin.json`, or `.mcp.json` are
-cached. Run **`/reload-plugins`** after touching those.
+Changes to `agents/*.md`, `.claude-plugin/plugin.json`, `hooks/hooks.json`, or
+`.mcp.json` are cached. Run **`/reload-plugins`** after touching those. The
+hook *scripts* are executed fresh each time; only the manifest is cached.
+
+## Hooks
+
+`hooks/hooks.json` registers three `PreToolUse` guards, all plain shell
+scripts that read the tool call as JSON on stdin (`jq`, with a `python3`
+fallback) and exit 2 with a message to deny it:
+
+| Script | Matcher | Denies |
+|---|---|---|
+| `guard-canvas-path.sh` | `mcp__pencil__execute` | any `filePath` that does not resolve to `<cwd>/design/prototype.pen`, or one that does not exist on disk |
+| `guard-headless-path.sh` | `Bash` | a `scripts/pen-run.sh` or `scripts/pen-save.sh` call whose `.pen` argument does not resolve to `<cwd>/design/prototype.pen` |
+| `guard-pen-read.sh` | `Read`, `Grep`, `Glob`, `Bash` | reading a `.pen` file with a file tool or a shell command (`cat`, `head`, `grep`, `jq`, …); git commands on `.pen` files pass |
+
+`hooks/hooks.json` is loaded automatically; the manifest must not also
+reference it (Claude Code reports a duplicate-hooks error when it does).
+
+Test them without Claude Code by piping a fake call:
+
+```bash
+echo '{"cwd":"'$PWD'","tool_name":"mcp__pencil__execute","tool_input":{"filePath":"/tmp/x.pen"}}' \
+  | hooks/guard-canvas-path.sh; echo "exit $?"     # expect a message and exit 2
+```
+
+The MCP path guard cannot see which file the editor has *active* — that is
+what `get_app_state` is for, and the skill still checks it in app mode. In
+headless mode the runner itself refuses to write while the file is the
+active editor of a running app (`scripts/pen-run.sh`, exit 75). Together
+they cover the failure recorded in `decisions.md`: a write that silently
+lands in the wrong canvas, and its headless cousin, a write the app then
+overwrites.
 
 ## Validating
 
@@ -89,21 +124,15 @@ cached. Run **`/reload-plugins`** after touching those.
 claude plugin validate .
 ```
 
-**Expect exactly one warning, and no more:**
-
-```
-⚠ version: No version specified. Consider adding a version following semver
-✔ Validation passed with warnings
-```
-
-That warning is the intended state — the plugin defines no `version`, so the
-version is derived from the commit SHA, which is the right mode while it changes
-daily. **This holds under marketplace install too**: an installed copy reports
-its SHA as the version and `claude plugin update` pulls the newer commit, so
-nothing about publishing forces a semver. `--strict` promotes warnings to errors and therefore fails by design.
-Do not "fix" it by adding a version; see [decisions.md](decisions.md) for when a
-real semver becomes appropriate. **If a second warning ever appears, that one is
-real.**
+**Expect no warnings.** `plugin.json` carries a semver `version` since the
+first public release (0.1.0, 2026-09-21); bump it in the same commit as any
+change a user would notice (a skill's behavior, a question asked, a file
+produced), and leave it alone for docs. Before that release the plugin
+defined no version and one warning about it was the intended state. **Under
+marketplace install**, `claude plugin update` pulls the newer commit
+whatever the version says, so the number is for people reading a changelog,
+not for the installer. `--strict` should pass too. **If a warning appears,
+it is real.**
 
 ## Repository layout
 
@@ -112,12 +141,23 @@ real.**
   plugin.json                the plugin manifest
   marketplace.json           single-plugin marketplace, so the repo installs directly
 skills/
-  discover/SKILL.md          optional interactive intake — the only step that asks
+  discover/SKILL.md          optional interactive intake — asks, writes the spec
+  brand/SKILL.md             optional interactive brand exploration — candidates side by side, asks
   prototype/SKILL.md         the pipeline: phases, delegation, commits, limits
-    references/*.md          the detail, loaded per phase rather than up front
+    references/*.md          the detail, loaded per phase rather than up front (shared by every skill)
+  finalize/SKILL.md          consolidates design/ after the last round, writes design/README.md
+  roadmap/SKILL.md           the business roadmap under docs/, from a finalized design
 agents/*.md                  researcher, brand-designer, designer, layout-reviewer, auditor
-templates/*.md               the skeleton of every artifact the pipeline writes
+hooks/
+  hooks.json                 three PreToolUse guards
+scripts/
+  pen-run.sh                 headless canvas access through the pen.dev CLI; saves at the end
+  pen-save.sh                app-mode save through the CLI, run before every commit
+  guard-canvas-path.sh       every Pencil write targets design/prototype.pen
+  guard-pen-read.sh          no file tool reads a .pen
+templates/*.md               the skeleton of every artifact the skills write
 evals/README.md              reference cases to run after any significant change
+  baselines/                 the exported screens of each case, per run, to diff against
 docs/*.md                    this documentation
 ```
 
@@ -136,7 +176,7 @@ does not show up in local testing.
 3. **No absolute paths.** Component paths are relative to the plugin root and
    start with `./`. Packaged files are referenced through `${CLAUDE_PLUGIN_ROOT}`.
 4. **Nothing outside the plugin root.** No `../`, no symlink pointing out.
-5. **No `version` in `plugin.json`.** See Validating, above.
+5. **`version` in `plugin.json` is semver and bumped with behavior changes.** See Validating, above.
 6. **Plugin agents accept only** `name`, `description`, `model`, `effort`,
    `maxTurns`, `tools`, `disallowedTools`, `skills`, `memory`, `background`,
    `isolation` — not `hooks`, `mcpServers`, or `permissionMode`.

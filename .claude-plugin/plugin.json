@@ -1,5 +1,6 @@
 {
   "name": "prototypen",
+  "version": "0.1.0",
   "description": "Autonomous product prototyping on the Pencil (pen.dev) canvas: turns an idea plus requirements into a navigable prototype, a complete design system, and the design documents that hand off to implementation — with an anti-generic constraint pass that runs before generation, not after.",
   "author": {
     "name": "Leandro Bueno",

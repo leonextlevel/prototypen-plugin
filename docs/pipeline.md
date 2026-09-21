@@ -1,21 +1,40 @@
 # Pipeline
 
-Ten phases. Three of them are conditional or mode-dependent. All of them commit.
+Ten phases, run as eight steps: 5 and 6 are one designer task, and 9 is the
+audit's final pass. Three are conditional or mode-dependent. All of them
+commit. Around the pipeline sit four other skills: `discover` before it,
+`brand` between discovery and the run when the user wants to choose the
+identity, `finalize` after the last round, and `roadmap` after that
+([usage.md](usage.md)).
 
-## Step 0 — The canvas file (before everything)
+## Step 0 — The access mode and the canvas file (before everything)
 
 The canvas is always `design/prototype.pen`. Before mode detection, before
-reading the request in detail, the skill calls `get_app_state` and compares the
-active canvas path to that target. If they differ, it **stops once and asks** the
-user to create and open the file — explaining that the run is autonomous from
-here to handoff and will not stop again, which is why the ask comes first. On
-confirmation it re-checks rather than trusting the answer, then continues.
+reading the request in detail, the skill creates the file if it is missing
+(the editor's own four-line empty document), checks that the pen.dev CLI is
+installed and logged in, and reads the spec's Targets table: a brand marked
+"to be explored" with no `design/brand.md` means the user asked for
+`/prototypen:brand` first. Then it **stops once and asks**, in one message
+(`references/canvas-access.md`): which access mode, **headless** (the CLI,
+no app open, saves itself; suggested for a bootstrap run) or **app mode**
+(the MCP with pen.dev open, the plugin saves before every commit; suggested
+for an incremental round); run the brand skill first or let this run decide
+the brand; here is the branch the commits go to; from here to handoff there
+are no more questions. On the answer it verifies rather than trusting: in
+app mode `get_app_state` must report the file as the active editor; in
+headless the runner refuses while the file is open in an app. It writes
+`design/run.md` with the mode, creates the branch if the run protocol calls
+for one, then continues.
 
-This exists because of a verified property of the Pencil MCP: `execute` against
-a path that does not exist does not fail — it silently writes into whatever
-canvas is active. Every canvas-writing agent (`designer`, `brand-designer`,
-`auditor`) repeats the check at the start of its task, and the skill repeats it
-before phase 5, the first canvas write.
+The app-mode check exists because of a verified property of the Pencil MCP:
+`execute` against a path that does not exist does not fail; it silently
+writes into whatever canvas is active. A plugin hook denies any `execute`
+whose path is not `<project>/design/prototype.pen`; the *active editor*
+half it cannot see, so every canvas-writing agent repeats the
+`get_app_state` check at the start of its task. Headless has no active
+editor: the path is an argument, and the whole class of error goes away,
+at the price of no live view. Both modes need the CLI, because the MCP has
+no save and the desktop app does not autosave.
 
 ## Mode detection (after the canvas check, before phase 1)
 
@@ -61,8 +80,15 @@ differently:
 
 | Axis | Handling | Why |
 |---|---|---|
-| **Viewport** | duplicated screen sets, split by region | a desktop table and a mobile card list are different designs, not one design at two widths |
-| **Theme** | themed variables, one screen set, plus a small `Theme Check` set | pen.dev variables theme natively, so one screen renders in every theme — provided no color is ever a literal |
+| **Viewport** | one screen version per viewport, side by side in the same row | a desktop table and a mobile card list are different designs, not one design at two widths |
+| **Theme** | themed variables, one screen set, plus two or three linked theme copies beside their source | pen.dev variables theme natively, so one frame renders in every theme, provided no color is ever a literal |
+
+Every version of a screen lives in a row that is a horizontal layout frame
+(`alignItems: "start"`), so the versions sit side by side and top-aligned
+whichever is taller; states and overlays go in the rows below, one per row,
+again every version side by side. The layout engine guarantees the
+arrangement; the sweep only confirms it
+(`skills/prototype/references/canvas-structure.md` §4).
 
 Primary viewport is built and audited **first**; the second is derived from a
 design that has already been judged, so a failed audit throws away half as much.
@@ -83,10 +109,21 @@ answers a human actually gave.
 Personas, jobs, core loop, screen inventory, the **navigation map** (per screen
 and overlay: what opens it, every way out — written before anything is drawn so
 orphans and dead ends cost a row to prevent instead of a fix cycle to find),
-and — the part that matters most — the **state inventory**: for every screen, which of empty / loading / error /
-first run / long list / long text / permission denied apply, and what each
-shows. Phase 8's completeness level checks against this table. A state missing
-here is a state nobody will notice is missing from the canvas.
+the **depth** of the round (`core`, the default: the core loop, the required
+secondary screens and the specific states, with the rest under Backlog;
+`full`: everything; flows by job, at most eight per round), and the two
+**state tables**. The generic states (empty, loading, error, first run, long
+list, long text, permission denied) are inherited from one exemplar per
+screen archetype, so that table names each screen's archetype and which
+apply. The **specific states** table lists only what a screen has of its
+own, with the reason; each row there becomes a screen row on the canvas,
+and nothing else does. Phase 8's completeness level checks both tables.
+
+When the product is something people sign up for, buy or download, intake
+decides whether the round includes a **landing page**; when it does, the spec
+carries the landing study (`references/landing-page.md`: the visitor, the one
+action, the objections, the proof, the section order) and the landing flow
+joins the inventory with its confirmation and submit-error screens.
 
 Anything the request left silent is decided, not asked, and recorded under
 Assumptions — with one exception, and it is a mention rather than a question. If
@@ -132,6 +169,12 @@ five times produces five different logos.
 
 Output enters phase 4 as a **constraint, not a suggestion**.
 
+When the user chose to explore the brand in discovery, `/prototypen:brand`
+runs the same agent in candidate mode before the pipeline starts: three
+candidates side by side in the `Brand` region, at most three rounds of
+choosing and refining, the same `design/brand.md` at the end. The phase is
+then skipped like any supplied brand.
+
 ## Phase 4 — Direction *(skipped in incremental mode)*
 
 | | |
@@ -142,9 +185,14 @@ Output enters phase 4 as a **constraint, not a suggestion**.
 | **Template** | `design-direction.template.md` |
 
 Two divergence axes chosen for this project. Three directions placed at
-genuinely different points on them, each declaring nine things: testable
-personality sentence, type pairing, modular scale with its ratio, palette from a
-concept, density, grid, edge treatment, motion, and what it rejects.
+genuinely different points on them, each declaring twelve things: testable
+personality sentence, type pairing (Google Fonts families only — nothing else
+renders), modular scale with its ratio, palette from a concept, density and
+spacing with application rules, grid, edge treatment, motion, navigation system
+per viewport, alignment posture, iconography system, and what it rejects. The
+chosen direction also fills the **token inventory** — every required semantic
+role by its fixed name, with a value per theme — so phase 6 has nothing to
+guess and phase 7 nothing to stop on.
 
 Then a written choice against criteria tied to the audience and the job — never
 to taste — plus a paragraph on why each of the other two was rejected, the
@@ -158,34 +206,43 @@ Regenerate them; never loosen the brand.
 direction file is a worse failure than a bad one, because it makes the audit
 unfalsifiable.
 
-## Phase 5 — Canvas structure
+## Phase 5 — Component inventory (the skill)
+
+Before the canvas is touched, the skill walks the screen inventory against
+`references/component-catalog.md`: which jobs each screen does, which
+component does each job, which overlays it opens, which navigation the
+direction declared. The resulting component list (name, job, variants,
+states, which screens use it) goes into `design/design-direction.md`. It
+exists so that phase 7 finds components instead of inventing them: in the
+first real project, the list was discovered flow by flow, and each discovery
+became an amendment, a system round and a propagation across every flow.
+
+## Phases 5 and 6 — Structure, then system (one designer task)
 
 | | |
 |---|---|
-| **In** | `design/product-spec.md`, `references/canvas-structure.md` |
-| **Out** | Named, empty region frames in the `.pen` file |
-| **By** | `prototypen:designer` |
+| **In** | `design/product-spec.md`, `design/design-direction.md` with its component list, `design/brand.md`, `references/canvas-structure.md` |
+| **Out** | The region frames, then `.pen` variables, base components and the state exemplars in the `Design System` region |
+| **By** | `prototypen:designer`, once, in that order; one commit when it reports |
 
-The **empty named skeleton only**: a `Design System` region at the top, a
-`Brand` region, and one `Flow — <Name>` region per flow, placed with
-`FindEmptySpace` so nothing overlaps. Nothing inside them yet.
+Structure first: the **empty named skeleton only**, a `Design System` region
+at the top, a `Brand` region, and one `Flow — <Name>` region per flow,
+placed with `FindEmptySpace` so nothing overlaps. Creating elements first and
+organizing afterward does not work: by the time there is something to
+organize, moving it costs more than placing it right would have. The two
+phases share a task because the order is what matters, not the handoff; a
+second agent invocation for three empty frames bought nothing.
 
-Creating elements first and organizing afterward does not work: by the time
-there is something to organize, moving it costs more than placing it right would
-have.
-
-## Phase 6 — System
-
-| | |
-|---|---|
-| **In** | `design/design-direction.md`, `design/brand.md` |
-| **Out** | `.pen` variables and base components in the `Design System` region |
-| **By** | `prototypen:designer` |
-
-Tokens go in as **variables** via `SetVariables` — color, type, spacing, radius,
-border, shadow — never as repeated literals. Then base components as
-`reusable: true` frames, each with its variants and states laid out beside it
-and named accordingly.
+Then the system. Tokens go in as **variables** via `SetVariables` — the direction's inventory
+under exactly its names — never as repeated literals. Then base components as
+`reusable: true` frames, each with its variants and its **interaction states**
+(default, hover, focus, pressed, disabled; error and filled for inputs, loading
+for buttons, selected for options) laid out beside it and named accordingly.
+Then the **state exemplars** in `Section / States`: for each screen
+archetype the inventory uses (list, object, form, dashboard) and each
+generic state, one screen-shaped frame built from those components, for the
+primary viewport and for any viewport where the state differs. Every screen
+of that archetype inherits them (`canvas-structure.md` §3b).
 
 The designer cannot invent a token. If the direction does not define something,
 it stops and reports; the direction file is amended by decision, never extended
@@ -199,9 +256,21 @@ by improvisation.
 | **Out** | Screens inside their flow regions |
 | **By** | `prototypen:designer`, **one subagent per flow, in parallel** |
 
-Each subagent receives the direction file, the brand file, the names of existing
-tokens and components, its flow's screens and states, its target region, and the
-user's language. Screens go in navigation order with a constant gap.
+Each subagent receives the access mode, the direction file with its
+component list, the brand file, the names of existing tokens, components
+and exemplars, its flow's screens with their specific states and overlays,
+its target region, the viewport to build, the user's language and the
+writing reference; it reads `references/designer-brief.md`, one file that
+condenses the craft references. Inside the region it builds one column
+group per screen in navigation order; the base row holds the screen's
+versions side by side, each **specific** state gets its own row below, and
+the overlay the screen is the first to open is shown in context in its row
+(once per product). Generic states are not drawn; they are the exemplars.
+
+A designer that needs a component the system lacks builds it from existing
+tokens and reports it; the skill ratifies the phase's additions once and
+propagates the ones that changed shape once, in one batch. At most two
+system rounds after phase 6.
 
 Parallelism is per-flow because flows are the natural isolation boundary — they
 never share a region, so two designers cannot collide.
@@ -218,7 +287,9 @@ States each screen's composition intent from its archetype, checks it with
 `ctx.bounds` — left edges, center axis, gaps, widths, dead space, row heights —
 before any screenshot, fixes what is mechanical (a parent's `alignItems`, a
 `gap`, a sizing mode, never a nudged `x`), and reports what is not as a change
-request. Runs again after any audit fix that touched layout.
+request. Covers the flow's base screens and specific states; the exemplars
+were reviewed with the system. Runs again after any audit fix that touched
+layout.
 
 Cheap and narrow by design. It does not judge; it verifies that centered is
 centered, one edge is one edge, and equal is equal.
@@ -231,42 +302,49 @@ centered, one edge is one edge, and equal is equal.
 | **Out** | `design/audits/<YYYY-MM-DD>.md`, plus fixes |
 | **By** | `prototypen:auditor`, **in a fresh context** |
 
-Five levels: structural, canvas organization and navigation integrity first
-(no screenshot — the last walks the spec's navigation map against the canvas
-for orphan screens and dead ends: every screen with a visible way in and out,
-every overlay with a dismiss and a completion path, every flow wired at both
-ends), then visual (screenshot), then completeness. Binary PASS/FAIL, every FAIL
+Two passes, two contexts. The **structural pass**, delegated with `model:
+sonnet`, runs levels 1, 2, 4 and 5 over everything with no screenshot:
+structure, canvas organization, completeness (the exemplars against the
+generic-state table, the rows against the specific-state table, depth
+against the backlog) and navigation integrity (the spec's navigation map
+walked against the canvas for orphan screens and dead ends: every screen
+with a visible way in and out, every overlay with a dismiss and a completion
+path, every flow wired at both ends). The **visual pass**, on opus, runs
+level 3 over the base screens, the specific states and the exemplars only;
+a screen's generic states are the exemplar. Binary PASS/FAIL, every FAIL
 naming the node and the fix.
 
 Every FAIL is classified. `execution` failures go back to a `prototypen:designer`;
 `direction` and `spec` failures go to the orchestrator as change requests (see
-Changes, below) and do not count against the screen. **At most 3 fix cycles per
-screen**
-at the visual level — past three it oscillates rather than converges. On the
-third failure the finding is written down as unresolved and the run moves on.
-Levels 1, 2, and 4 are objective, converge, and are fixed until they pass.
+Changes, below) and do not count against the screen. **At most 2 fix cycles per
+screen** at the visual level — past two it oscillates rather than converges. On
+the second failure the finding is written down as unresolved and the run
+moves on. Levels 1, 2, 4 and 5 are objective, converge, and are fixed until
+they pass.
 
 Incremental mode adds two hard failures: a hardcoded value where a token exists,
 and a new component duplicating an existing one.
 
-## Phase 9 — Organization review
+## Phase 9 — Organization sweep (the audit's last pass)
 
 | | |
 |---|---|
 | **In** | The canvas, `references/canvas-structure.md` |
 | **Out** | A clean canvas |
-| **By** | `prototypen:auditor` |
+| **By** | `prototypen:auditor`, as the final pass of phase 8 |
 
 **Mandatory at the end of every round**, including an incremental round that
-touched a single screen. Nine checks: loose elements at the root, elements
-bleeding past bounds, overlapping elements, overlapping regions, unnamed boxes,
-duplicate names, screens out of flow order, flows sharing a region, inconsistent
-gaps.
+touched a single screen. It is the rubric's level 2 in full, fourteen
+structural checks (loose elements at the root, bleeding, overlaps, unnamed
+or duplicate names, groups out of order, flows sharing a region, the
+region/group/row layouts, a viewport missing from a base row, a version out
+of its row, a `placeholder: true` left anywhere, exploration leftovers) plus
+one `TakeScreenshot(["document"])` for whether the canvas reads as an
+organized document to someone opening it cold.
 
-Eight of the nine are structural and run through `Get` visitors with
-`ctx.bounds` and `ctx.problems`. One `TakeScreenshot(["document"])` covers the
-macro arrangement — whether the canvas reads as an organized document to someone
-opening it cold.
+It used to be a separate auditor invocation. It is now the first audit's
+level 2, run once more after the last fix lands; when nothing needed fixing,
+the first result stands. Same checks, one fewer context.
 
 Everything found is **fixed before handoff**, never filed as a note.
 
@@ -275,15 +353,27 @@ Everything found is **fixed before handoff**, never filed as a note.
 | | |
 |---|---|
 | **In** | The canvas, every constraint file, the latest audit |
-| **Out** | `design/design-spec.md` |
+| **Out** | `design/design-spec.md`, `design/tokens.json`, `design/tokens.css`, `design/screens/**` |
 | **By** | The skill |
-| **Template** | `design-spec.template.md` |
+| **Template** | `design-spec.template.md`; procedure in `references/handoff.md` |
 
-Every token with its canvas variable name and intended code name. Every
-component with variants, states, props, and the behavior the canvas cannot show.
-The screen inventory with flows and built states. Focus order, responsive
-behavior, motion, copy tone, accessibility decisions. And the **open findings**
-carried over from the audit — what failed three cycles and needs a human.
+**Exports first**, because the `.pen` file is readable only inside pen.dev:
+every screen version and state as PNG under `design/screens/<flow>/`, each
+flow as HTML, the design-system and brand regions as images (the exemplars
+with the design system), and the variables as `design/tokens.json` (W3C
+Design Tokens, all themes) and `design/tokens.css`. Skipped when
+`design/screens/.exported` names the current canvas commit. `design/screens/`
+is written with its own `.gitignore` and never committed: the exports are
+for validation, are regenerated on every handoff, and would bloat the
+repository. Procedure in `references/handoff.md`.
+
+Then `design-spec.md`: every token with its canvas variable name and intended
+code name, every component with variants, states, props, and the behavior the
+canvas cannot show, the screen table generated from the canvas by the
+snippet in `handoff.md` (never typed), the verified navigation map, focus order, responsive behavior, motion,
+copy tone, accessibility decisions, the fonts and icon library to load, the
+**open findings** carried over from the audit, and the **run summary** from
+`design/run.md`.
 
 ## Changes during the run
 
@@ -300,11 +390,16 @@ that phase, not a third patch. Full procedure in
 ## Commit points
 
 `.pen` files are JSON, so they diff in git. **Commit at the end of every phase**,
-canvas and documents together, with the phase in the message:
+canvas and documents together — `git add design/`, never `-A` — with the phase
+in the message, on a `design/<date>` branch when the run started on the
+default branch, and with `design/run.md` updated in the same commit:
 
 ```
 design: phase 6 — system tokens and base components
 ```
+
+Full procedure, including resume and rollback, in
+`skills/prototype/references/run-protocol.md`.
 
 This is what makes the recovery rule possible. **When the audit condemns a
 phase, go back to that phase's commit and redo it** — do not patch on top. A
@@ -318,6 +413,9 @@ afterward, and the cost of unwinding it grows with each subsequent phase.
                        │
                        ▼
              design/product-spec.md
+                       │
+          /prototypen:brand  (optional, interactive; when the spec says "to be explored")
+                       │
                        │
           0  canvas check ── design/prototype.pen open?
                        │      (asks once if not; the only stop)
@@ -335,9 +433,7 @@ afterward, and the cost of unwinding it grows with each subsequent phase.
         │                              │
    4 Direction                         │
         │                              │
-   5 Canvas structure                  │
-        │                              │
-   6 System                            │
+   5–6 Structure, then system          │
         └──────────────┬───────────────┘
                        │
                   7 Screens  (parallel, one per flow; self-review per screen)
@@ -347,7 +443,9 @@ afterward, and the cost of unwinding it grows with each subsequent phase.
                   8 Audit ──► [execution] ──► fix ──┐ max 3 cycles per screen
                        │◄───────────────────────────┘
                        ├──► [direction] / [spec] ──► change request ──► amend, propagate, log, commit
-                  9 Organization review  (always)
+                  9 Organization sweep  (the audit's last pass, always)
                        │
-                 10 Handoff
+                 10 Handoff  (exports unversioned; design-spec.md)
+                       │
+          /prototypen:finalize  →  /prototypen:roadmap   (after the last round)
 ```

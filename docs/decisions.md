@@ -781,3 +781,636 @@ between frames, so the check is by reading: does the control the map names
 exist, visibly, on the screen the map names, labeled to go where the map says.
 `Get` visitors listing each screen's named controls do most of it; a screenshot
 only where a label is ambiguous.
+
+---
+
+## 2026-09-11 — The two most dangerous rules became hooks
+
+**Decided:** `hooks/hooks.json` registers two `PreToolUse` guards.
+`guard-canvas-path.sh` denies any `mcp__pencil__execute` whose `filePath` does
+not resolve to `<cwd>/design/prototype.pen` or whose target does not exist on
+disk. `guard-pen-read.sh` denies `Read`, `Grep`, `Glob` and reading shell
+commands (`cat`, `head`, `grep`, `jq`, …) aimed at a `.pen` file; git commands
+on `.pen` files pass.
+
+**Why:** the wrong-canvas write is the most dangerous property of the tool
+found so far — verified on the live server, recorded in five files — and it was
+guarded only by text. An instruction repeated in five places is still an
+instruction; a session that skims one of them writes the whole prototype into
+`temp.pen` and reports success. A hook does not skim. The `.pen` read guard is
+the same reasoning at lower stakes: a full document is hundreds of kilobytes
+that would flood the context, and there is never a reason to read it outside
+`Get`.
+
+**What the hook cannot do:** see which file the editor has *active*. `execute`
+with the correct path against a file that exists but is not the active editor
+is the case the hook passes and `get_app_state` catches, so the skill keeps
+that check. The two halves together cover the failure.
+
+**The rule for adding hooks**, recorded in `contributing.md`: a hook is for a
+rule that is mechanically checkable from the tool call alone and expensive to
+violate. Judgment never goes in a hook.
+
+**Implementation notes:** plain shell, `jq` with a `python3` fallback, exit 2
+with a message on deny. Without either interpreter the guards warn and allow,
+so a machine without them degrades to the old instruction-only behavior rather
+than blocking every write. Tested by piping fake calls: wrong path, right path,
+relative path normalized, missing file, `Read` on `.pen`, `Read` on `.md`,
+`cat` on `.pen`, `git add` on `.pen`, `jq` on `.json`.
+
+---
+
+## 2026-09-11 — Phase 10 exports the prototype out of pen.dev
+
+**Decided:** handoff produces, before `design-spec.md`: one PNG per screen and
+state variant under `design/screens/<flow>/`, each flow as `html-css`, the
+design-system and brand regions as images, `design/tokens.json` in the W3C
+Design Tokens format with every theme, and `design/tokens.css` with one block
+per theme. Procedure in `references/handoff.md`.
+
+**Why:** the `.pen` file is readable only through the MCP, so the prototype did
+not exist for anyone without the editor open — an implementing agent in
+another session, a stakeholder, the user on a phone, or the eval baselines.
+"Navigable prototype" in the README meant a navigation map in a markdown table.
+`Export` was verified on 09/09 and unused; `tokens.css` is what an implementer
+actually drops into a project on day one.
+
+**Format choices:** W3C DTCG for `tokens.json` because it is the one format
+every token tool reads; themes go in `$extensions` because the spec has no
+native theme axis and a file per theme splits what the canvas keeps together.
+`tokens.css` uses `:root` for the default theme and `[data-theme="<name>"]`
+for the others, names verbatim from the canvas.
+
+**Left open:** whether `html-css` export honors `TextStyle.href`. If it does,
+the navigation map can be made real — every "exits to" control gets an `href`
+to its target's anchor — and the HTML becomes a clickable prototype. Marked TO
+VERIFY in `pencil-mcp.md` and `handoff.md`; the Pencil server was disconnected
+when this was written.
+
+---
+
+## 2026-09-11 — The direction fills a token inventory with fixed names
+
+**Decided:** `design-direction.md` Step 3b lists the semantic roles every
+chosen direction must fill — surfaces (page, raised, overlay, sunken, scrim),
+text (primary, secondary, tertiary, on-accent, link), accent (base, hover,
+pressed, subtle), borders (base, strong, focus), four semantic colors each with
+text and surface, type families and weights and leading, the type scale with a
+role map, the spacing scale with application rules, shape, depth, motion,
+icons, and per-viewport layout. Names are fixed (`color-surface-raised`,
+`space-2`, `font-body`). Phase 6 writes them verbatim; criterion 1.11 fails a
+run missing one; a role the product does not need is marked `—` with a reason.
+
+**Why:** "palette derived from a concept" said what a palette *is* and nothing
+about *coverage*. The designer, forbidden to invent, stopped on every gap —
+pressed accent, focus ring, warning surface, overlay surface — and each stop
+was a change request, a decision, a propagation and a commit in the middle of
+a screen. The gaps are the same every time, so the fix is to require them up
+front. Fixed names are what let an incremental round, a different user, and
+`tokens.css` find the same thing.
+
+**Why this is not a design system imposed on the direction:** the inventory
+names *roles*, not values, and says nothing about what a surface or an accent
+looks like. A direction may add roles. It may not rename these.
+
+---
+
+## 2026-09-11 — Fonts must exist; iconography is the twelfth item
+
+**Decided:** the type pairing names exact Google Fonts families and the weights
+they ship, because pen.dev renders Google Fonts and nothing else unless font
+files are supplied; a family that is not there falls back silently to a sans.
+Criterion 3.24 checks that the rendered face is the declared one. And the
+direction declares an **iconography system** — one library of the four the
+schema offers, one weight, a size scale tied to the type scale, filled or
+stroked — as item 11, audited as 3.25.
+
+**Why:** both were invisible failures. A fallback font renders without error
+and the screenshot the auditor judges shows the fallback — the audit passes a
+serif direction rendering in a grotesque. Mixed icon libraries and sizes were
+the most recognizable AI tell left uncaught after the type and the palette,
+and no item of the direction owned them.
+
+---
+
+## 2026-09-11 — Component states, overlay placement, placeholder sweep
+
+**Decided:** three smaller gaps closed together.
+
+- **Component states (4.12).** Every interactive base component gets `default`,
+  `hover`, `focus`, `pressed`, `disabled` as named variants in the design-system
+  region; inputs add `error` and `filled`, buttons `loading`, options
+  `selected`. The handoff template already listed these states; nothing built
+  or audited them, so the implementer got a guess for every state but one.
+  `focus` missing is an accessibility defect.
+- **Variants and overlays in the screen's column (2.12).** Screens run left to
+  right in one row; each screen's states and the overlays it opens stack below
+  it at the same gap. An overlay is shown in context — screen, scrim, overlay
+  instanced — named `<NN> <Screen> / <Overlay>`. Before this the placement of
+  variants was "beside the screen", which each designer read differently, and
+  a variant to the *right* of its screen reads as the next screen in the flow.
+- **Placeholder sweep (2.11).** A frame still flagged `placeholder: true` at
+  the end of a round is either unfinished work or a logo generation that never
+  landed; nothing checked, so it reached handoff.
+
+---
+
+## 2026-09-11 — A run protocol: branch, `git add design/`, `run.md`
+
+**Decided:** `references/run-protocol.md`. On the default branch, work on a new
+`design/<date>` branch; on any other branch, stay. Commit only `design/` —
+`git add design/`, never `-A`. Keep `design/run.md` (mode, request, language,
+branch, canvas, targets, one row per phase with status and commit, the change
+log by title, open findings) updated in every commit. Resume reads it first.
+
+**Why:** ten commits landing on `main` without a review is intrusive, and a
+pipeline that `git add -A`s sweeps the user's unrelated work into design
+commits. Resuming depended on interpreting `git log`, which works until a
+phase is redone or a change commit lands between phases; a table with status
+per phase does not need interpreting, and it is also the summary the user
+reads to see what a run that never asked them actually did.
+
+---
+
+## 2026-09-11 — The `designer` moves to opus, on a hypothesis the evals must test
+
+**Decided:** `agents/designer.md` runs on `opus`, `effort: high`, like the
+auditor and the brand designer.
+
+**Why:** the sonnet assignment rested on "generation is execution once the
+direction is decided". That undersold how much taste lives in execution —
+spacing, type, composition, the difference between a screen that follows the
+direction and one that *is* the direction — and it was the biggest quality
+lever left after the process layer was closed. The cost is real: the designer
+makes the most tool calls of any agent and runs one per flow in parallel.
+
+**This is a hypothesis, not a result.** The Pencil server was disconnected when
+it was made, so the evals did not run. The check is `evals/README.md` with the
+baselines from the previous sonnet runs side by side. **Would change back if:**
+the four cases show no visible difference in the exported screens, or the
+audit's execution-failure count does not drop. It is a one-line revert.
+
+---
+
+## 2026-09-11 — Step 0 creates the canvas file; the user only opens it
+
+**Decided:** when `design/prototype.pen` does not exist, the skill writes the
+editor's own empty document — `{"version": "2.17", "children": [], "fileToken":
+"<uuid>"}` — and asks the user only to open it.
+
+**Why:** the "TO VERIFY: does a 0-byte file open" question from 09/10 was
+answered sideways. `temp.pen`, the scratch canvas the editor itself created, is
+that four-line JSON; writing the same content is not a guess about the format,
+it is a copy of it. Halving the ask (open, not create-and-open) shortens the
+one stop the pipeline makes. Opening stays the user's for the reason recorded
+on 09/10: `code -r` can land in another window and trigger a trust prompt, and
+neither is observable from here.
+
+**Left marked TO VERIFY:** that the written file opens on the first try. If a
+user reports it does not, the fallback is the old ask.
+
+---
+
+## 2026-09-11 — Permissions are a documented prerequisite
+
+**Decided:** `docs/usage.md` carries a `.claude/settings.json` allowlist —
+the Pencil tools, `git` under `design/`, writes to `design/`, the shell bits
+the run protocol needs — and names auto mode as the alternative. The skill's
+preconditions say so, and `run.md` records any prompt that did interrupt.
+
+**Why:** a plugin cannot ship permissions, and a run that stops at the first
+permission prompt is not the unattended run the whole design assumes. This was
+the most likely failure for anyone installing the plugin cold, and nothing
+mentioned it.
+
+---
+
+## 2026-09-19 — A writing reference, read by everything that writes
+
+**Decided:** `references/writing.md` names the tells of generated prose (the
+em dash as default connector, the staccato of short sentences, the "not X
+but Y" reflex, triads, bolded lead-ins, inflated vocabulary) and says what
+to do instead, for documents and for canvas copy alike. Every skill reads it
+before writing; every agent file carries the pointer next to its language
+instruction, and the prototype skill passes it in every prompt.
+
+**Why:** the user read the pipeline's output and recognized it as
+model-written before reading what it said. The plugin's own files use those
+same devices heavily, because they are written for a model to follow, and a
+model reproduces the style it reads; so the reference says explicitly that
+the plugin is not a style sample. The pointer has to be in every agent file
+for the same reason the language rule does: agents run isolated.
+
+**What would change it:** a user naming a house style. The reference is the
+default, not a rule over the user's preference.
+
+---
+
+## 2026-09-19 — Versions of a screen sit side by side in layout rows
+
+**Decided:** one region per flow, not one per viewport. Inside it, one
+column group per screen (a vertical layout frame), holding rows (horizontal
+layout frames, `alignItems: "start"`); the base row holds every version of
+the screen (viewports in Targets order, each followed by its theme copy),
+and each state and each overlay gets its own row with every version side by
+side. The theme check moved out of the Design System region: a
+representative screen's dark copy is a linked `Copy` with `theme: {mode:
+"dark"}` placed right after its source. Names gained `@ <Theme>` for theme
+copies and `/ Group`, `/ Row — …` for the structural frames.
+
+**Why:** the user wanted equivalent screens next to each other, aligned at
+the top, whatever their heights. The previous structure (a region per
+viewport, states below in a column) put a screen's mobile version in another
+region entirely and left top alignment to arithmetic on `y`. A layout row
+makes the alignment a property of the document instead of a check: the
+tallest frame sets the row and everything starts at the same `y`. It also
+turned three organization checks into structural ones and made a
+single-viewport project and a three-version project the same shape.
+
+**Verified:** `Entity.theme` exists on every node in `pen-schema.md`
+(extension 0.6.71), and `Copy` of a reusable node yields a linked `ref`.
+**Left TO VERIFY:** that the copy actually renders in the other theme in the
+editor and in `Export`. The fallback (a plain `Copy` with the same override)
+is written down in `canvas-structure.md`.
+
+---
+
+## 2026-09-19 — Two fewer subagent invocations per round
+
+**Decided:** phases 5 and 6 are one designer task, in that order, with a
+commit between; phase 9 is the audit's level 2 run once more after the last
+fix, not a separate auditor invocation, and when nothing needed fixing the
+first audit's level 2 stands. The phase numbers stay, because the rubric,
+the run log and every commit message use them.
+
+**Why:** the user asked for a lighter flow. Phase 5 is three empty frames;
+handing them to a separate context bought an extra `get_app_state`, an
+extra read of every reference, and nothing else, since what matters is the
+order (grid before elements), which one task preserves. Phase 9 was
+literally the rubric's level 2 with a screenshot; the auditor already runs
+level 2 in phase 8. What was lost: nothing the evals should detect. What
+would change it: an eval showing the sweep missing things when it is not a
+dedicated task.
+
+The same request cut the designer's file from 305 lines to 166 and the
+prototype skill from 493 to 264, by replacing restated craft rules with
+pointers to the references the agent reads anyway. `contributing.md` now
+says the agent file names what to read and what it is judged on, and does
+not restate it; the restated rules had already started drifting from the
+originals.
+
+---
+
+## 2026-09-19 — Brand exploration is a skill, and discovery asks about it
+
+**Decided:** `/prototypen:brand` runs the brand designer in candidate mode:
+three candidates side by side in the Brand region (name in its type, a mark
+generated per candidate, palette swatches, a specimen with the mark on light
+and dark, a button and a line of text), one `AskUserQuestion` per round, one
+refinement axis per round, at most three rounds, then the same
+`design/brand.md` the pipeline would have written plus an Exploration
+section. Discovery asks whether the brand exists, is to be explored, or the
+pipeline decides, and records it in Targets; the pipeline's Step 0 mentions
+a pending exploration in its one question.
+
+**Why:** the user found that when nothing about the identity is decided, a
+short refinement of the logo and base palette before the prototype pays
+for itself; a brand invented unattended is only seen after every screen is
+built on it. The seam test in `contributing.md` holds: this asks, the
+pipeline does not, and asking here is cheap because only candidates exist.
+It is a separate skill rather than a mode of `discover` because it needs the
+canvas and the research, and `discover` deliberately touches neither.
+
+**The one exception it creates:** three `Generate` calls in round 1, against
+the "generate once" rule. They are three brands, not five copies of one; the
+rule's reason (five generations drift apart) does not apply across
+candidates.
+
+---
+
+## 2026-09-19 — Screen exports are not versioned
+
+**Decided:** phase 10 writes `design/screens/.gitignore` (`*` and
+`!.gitignore`) before exporting. The logo previews under
+`design/brand/logo/preview/` stay versioned.
+
+**Why:** the user's call: the exports exist to validate the prototype
+without pen.dev, not as a record. They are binary, they change on every
+handoff, and the canvas is the source; committing them bloated every
+design commit. The `.gitignore` inside the folder keeps the rule
+self-contained (no edit to the user's root `.gitignore`) and `git add
+design/` keeps working. The eval baselines copy from disk, which still
+works. The earlier "if the repository forbids binaries" clause went away
+with it.
+
+---
+
+## 2026-09-19 — A landing page is decided at intake and structured by a study
+
+**Decided:** discovery asks, for anything people sign up for or buy, whether
+the landing page is in this round; intake decides when discovery did not
+run. When it is, the spec carries a landing study
+(`references/landing-page.md`: the visitor and where they come from, the
+one action, the objections in order, the proof available, the section order
+with what each section answers) and `Flow — Landing Page` joins the
+inventory with its confirmation and submit-error screens. Research adds a
+landing-page section; the designer of that flow reads the reference; the
+rubric gained 4.13 (every section the study lists, in order, one primary
+action).
+
+**Why:** the user wanted the landing page planned and studied rather than
+improvised. The generic landing page fails before the first pixel, on an
+undecided visitor and an undecided action; a study written at intake is
+what the direction and the audit can hold the page to. It is a reference
+and a spec section rather than a phase because it changes what phases 1, 2
+and 7 produce, not the sequence.
+
+---
+
+## 2026-09-19 — `finalize` and `roadmap` as skills, on a second seam
+
+**Decided:** two skills that run once, after the rounds. `finalize`
+consolidates `design/`: sweeps the canvas, removes unused components and
+variables, folds amendments into the direction and the brand, drops the two
+rejected directions to their rationale, reconciles the spec with what was
+built, keeps only the latest audit, deletes `run.md`, refreshes the exports
+and `design-spec.md`, and writes `design/README.md` as the entry point.
+`roadmap` reads a finalized folder and writes `docs/roadmap.md` plus one
+file per milestone, placing every screen version exactly once, with states
+as acceptance criteria; it asks one question only when the spec does not
+settle the milestone cut.
+
+**Why:** the user asked for both. `contributing.md` said a third skill
+needs a seam as real as asking-versus-deciding. These sit on a different
+one: what is consumed and produced, and when. The pipeline optimizes for
+recoverability while it runs (dated audits, a run log, appended amendments)
+and cannot know the run is over; `finalize` is that decision, made once
+across rounds. `roadmap` writes for a different audience in a different
+place. Neither is a phase, because a phase runs inside one round.
+
+**Deliberate limits:** `finalize` asks nothing and deletes only what git
+holds; `roadmap` sequences without dates and never comments on the design.
+The change-protocol rule against editing a decision in place still holds
+during a run; `finalize` is the moment it stops applying, and the folded
+history is listed so nothing is silently rewritten.
+
+---
+
+## 2026-09-20 — The first real project: what it cost, and six changes
+
+**Context:** the first complete run of the plugin on a real product
+(brasario, an RPG session tool: three surfaces, twelve areas, one user)
+consumed a large part of a Claude Max quota over two `prototype` rounds and
+two `finalize` runs. The delivered `design/` folder was read as evidence.
+The numbers: 521 screens, of which 81 base; 303 states and 137 overlays,
+each a full copy of its screen; 265 screens (51%) were the five generic
+states (loading, error, empty, long list, long text) repeated per screen.
+457 components, 113 tokens, 114 amendments, nine "system rounds", two full
+propagations across twelve flows, three audit fix cycles, 524 PNGs exported
+twice, a 521-row screen table typed by the model twice. Every agent on the
+critical path ran on opus at high effort.
+
+The six decisions below come from that reading. Each is recorded on its
+own so it can be reverted alone.
+
+### States are exemplars, not screens
+
+**Decided:** the generic states are drawn once per screen archetype (list,
+object, form, dashboard) as exemplars in `Design System / Section /
+States`, and inherited. A screen gets a state row only for a **specific
+state** the spec lists with a reason. Overlays are shown in context once
+per product. The spec's state inventory becomes two tables (generic, by
+archetype; specific, with reasons) plus a backlog. Rubric level 4 checks
+the exemplars; sweep checks 15 and 16 fail a generic state drawn as a row
+and an overlay shown twice.
+
+**Why:** a `Loading` of "System settings" and a `Loading` of "Campaign
+list" are one skeleton on two bases, and each cost a designer, a layout
+review, an audit, an export and a spec row. The multiplier over base screens
+was 6.4. The implementer needs the pattern, not the product of pattern and
+screen.
+
+**Would change if:** implementers report that the exemplar plus the
+generic-state table is not enough to build a given screen's state. The fix
+then is a specific-state row for that screen, which the protocol already
+allows.
+
+### Depth: `core` by default, `full` on request, flows by job, eight per round
+
+**Decided:** the Targets table declares a depth. `core` draws the core loop,
+the required secondary screens and the specific states, and lists the rest
+under Backlog; `full` draws everything. Flows are the user's jobs, not the
+product's areas; a round draws at most eight.
+
+**Why:** twelve area-flows for a one-person product multiplied the shell,
+the repeated overlays and the states. Nothing put a ceiling on the
+inventory, and "deciding what screens exist is design work" was read as
+"draw all of them".
+
+### The component inventory is the orchestrator's, and designers may add
+
+**Decided:** a phase 5 step where the skill walks the screen inventory
+against the catalog and writes the component list into the direction. A
+flow designer that still needs a component builds it from existing tokens
+and reports it; the additions are ratified once per phase. Propagation
+happens once, in one batch, only for components that changed shape. At most
+two system rounds after phase 6.
+
+**Why:** the cascade was the second largest cost: each flow discovered
+components, each discovery was a formal amendment, each batch a system
+round, each round a propagation reopening twelve opus contexts, and each
+propagation surfaced new gaps. Nine rounds. The change protocol was
+designed to stop quiet erosion of constraints; a missing chip is not a
+constraint, and treating it as one cost more than the erosion would have.
+
+### Models: designer back to sonnet; the audit split in two passes
+
+**Decided:** `designer` on sonnet, medium effort. The audit is a structural
+pass (levels 1, 2, 4, 5) delegated with `model: sonnet`, and a visual pass
+(level 3) on opus over base screens, specific states and exemplars only.
+Two fix cycles per screen instead of three. The layout reviewer covers base
+screens and specific states. `usage.md` carries the table of who runs on
+what and where to change it.
+
+**Why:** the 2026-09-11 move to opus was recorded as a hypothesis the evals
+would test; the evals never ran, and brasario is the first data. The
+designer is the agent with the most tool calls, runs once per flow in
+parallel and again on every propagation and fix; opus there dominated the
+bill, and the audit's execution findings do not show the taste it was
+supposed to buy. The structural levels are `Get` visitors and table
+comparisons, which is not judgment. Third fix cycles resolved almost
+nothing the second had not.
+
+**Would change if:** exported screens from a sonnet designer look worse on
+the eval cases, criterion by criterion. Revert is one line.
+
+### A designer brief instead of six references
+
+**Decided:** `designer-brief.md`, one file the designer reads, condensing
+`screen-craft.md`, `layout.md`, `component-catalog.md`,
+`canvas-structure.md` and the Pencil rules; the long files stay as the
+source, consulted by section.
+
+**Why:** every designer task loaded roughly 1,500 lines of reference plus
+the schema plus three design documents before its first canvas call, per
+flow, per propagation, per fix. Most of it is context the brief carries in
+a tenth of the space.
+
+### The handoff generates what the canvas already knows
+
+**Decided:** the screen table in `design-spec.md` is printed by a snippet
+and pasted; exports are skipped when `design/screens/.exported` names the
+current canvas commit.
+
+**Why:** 521 rows typed by the model, twice, and 524 PNGs exported twice
+from an unchanged canvas.
+
+---
+
+## 2026-09-20 — Two ways to reach the canvas, asked once, with a default
+
+**Decided:** every skill that writes to the canvas asks the user, first and
+once, whether to run in **app mode** (the MCP, pen.dev open) or **headless**
+(the pen.dev CLI, `scripts/pen-run.sh`). Headless is suggested for a full
+`prototype` run; app mode for incremental rounds, `brand` and `finalize`.
+In app mode `scripts/pen-save.sh` (the CLI in app mode, `save()`) runs
+before every commit. In headless the runner refuses to write while the file
+is the active editor of a running app, and every run ends with the notice
+that the file must be closed and reopened to be seen.
+
+**Why:** the user moved from the VS Code extension to the desktop app and
+lost autosave: the desktop app saves an existing `.pen` only on Ctrl+S and
+does not reload a file changed on disk (both verified on 2026-09-20; the
+first shows in the brasario history as "canvas save pending" on most
+commits). The MCP API has no save. The CLI has both a `save()` for an open
+app and a headless mode with the same engine, so the same snippet produces
+the same result either way; the two paths differ in who saves and whether
+the user can watch, which is a choice the user should make, not the
+plugin. Headless also removes the active-file check and the class of
+"wrote into the wrong canvas" errors, at the price of no live view.
+
+**Verified:** headless build, save and export of a full screen; the
+desktop app showing a headless change only after close and reopen;
+`save()` in app mode rewriting the file on disk with no pending marker in
+the app. Not yet measured: the token difference between the modes on the
+same flow; the estimate is 15–25% in favor of headless from what leaves
+the context, and the eval to confirm it is the same flow both ways with
+`/cost` compared.
+
+**Would change if:** pen.dev ships autosave or file watching in the desktop
+app; then the notice goes and the guard stays.
+
+---
+
+## 2026-09-21 — When `Generate` has no credits, the artwork is built by hand
+
+**Decided:** `Generate` (`"svg"` for marks, `"ai"` and `"stock"` for
+fills) is retried once after an empty result, and not at all after an error
+naming credits, quota or a plan limit. After that the run stops calling it
+and takes a manual path: marks from primitives (ellipse, rectangle,
+polygon, a few hand-written paths) with a concept primitives can carry, the
+five SVG files written by hand from the same primitives, photography as
+the system's placeholder frame, one note in `run.md`, in `brand.md` and in
+the report, and the items under open findings. The user is told, and can
+regenerate later.
+
+**Why:** the user reported that Pencil's SVG tool misbehaves when the
+account runs out of credits. The rule against hand-drawn logos assumed
+generation was always available; without a fallback, a run would either
+loop on `Generate` or deliver empty frames, both worse than a plain
+monogram that says what it is. The concept is constrained to what
+primitives do well precisely because the original rule is right about
+hand-built illustration.
+
+---
+
+## 2026-09-21 — Three checks that do not depend on the model's judgment
+
+**Context:** the user's reading of the plugin's output after the first
+project: documents and canvas copy that separate ideas with periods in a
+way that reads as generated; screens with everything ranged left and top;
+and adjustments to an existing prototype reported as done without being
+checked, especially when a mid-tier model applied them.
+
+**Decided, one per problem, each mechanical:**
+
+1. **The period test and `scripts/prose-check.py`.** `writing.md` names the
+   signal (three or more short sentences in a row in one paragraph) and the
+   fix in order (one sentence with a connective, a list, a cut). The script
+   flags that and the other tells (em dashes, fragments, the contrast
+   reflex, bolded triads, inflated words) with a line per finding. Every
+   skill runs it on every document before committing; the auditor runs it on
+   every multi-sentence text node of the canvas (criterion 3.9, with the
+   visitor that lists them). A period is not forbidden; a run of them is a
+   finding.
+2. **Alignment on both axes (`layout.md` §1b, criterion 3.26).** A table of
+   cross-axis rules (icon beside one line of text is centered, label and
+   control centered, title and actions on one line, two columns start at
+   one `y`), a table of block cases (centered archetypes centered in a
+   region with an explicit height, modal actions right, amounts right), and
+   the reflex test: one visitor that prints every layout frame's alignment,
+   with the rule that default alignment everywhere fails on anything but a
+   plain list or form. The brief said "one strong left edge per screen" and
+   nothing about the vertical axis; that sentence was part of the bias.
+3. **`adjustment-verification.md`.** Every change to an existing prototype
+   runs as: checks written from the request before the canvas is touched,
+   snapshot before, change at the cause, snapshot after, diff read against
+   the checks (the request is applied; nothing else moved), the mechanical
+   pass and one screenshot, propagation, a report in a fixed shape with a
+   PASS or FAIL per check. The orchestrator returns a report without the
+   checks section. The snippets are in the file so the procedure needs no
+   invention.
+
+**Why mechanical:** the designer and the structural audit now run on
+sonnet, and the user's observation was exactly that intermediate models do
+not find these problems on their own. A rule a model has to notice is
+worth less than a visitor that prints a number; each of the three turns a
+judgment into a printed line.
+
+---
+
+## 2026-09-21 — A requested adjustment that conflicts with a rule is a question, not a decision
+
+**Decided:** in adjustment mode (any request after a run reached
+handoff), the request is compared with the five sources of existing rules
+(direction, brand, spec, canvas structure, craft) before it becomes
+checks. A conflict, or an ambiguity the checks cannot resolve, is a
+question to the user with three choices: amend the rule and propagate,
+apply as a named exception on that screen, keep the rule and reshape the
+request. **Whoever finds it asks**: the orchestrator at the check, or the
+designer while working, through a `QUESTION` block the orchestrator relays
+verbatim and answers back to the same agent. Inside the autonomous run and
+its fix cycles nobody asks; a designer reports `CONFLICT` and the change
+protocol applies. The answer is recorded in `design/changes.md`.
+
+**Why:** the user asked for it, and it closes a gap in the change
+protocol: that protocol makes the orchestrator decide every change so an
+unattended run never erodes its constraints, but once the run is over the
+person is present, the request is theirs, and the agent applying it is the
+one with the facts of the conflict in front of it; a relay keeps that
+context instead of re-deriving it in the orchestrator. Applying it silently either breaks the
+rule on one screen (the next audit fails it, the next designer copies it)
+or overrides the user by refusing. Asking costs one question in a round
+the user is already attending.
+
+**Deliberate limit:** expected collateral (a shared header changes on every
+screen that instances it) is not a conflict; it goes in the checks and the
+report, not in the question.
+
+---
+
+## 2026-09-21 — First public release: `version` 0.1.0, LICENSE, README in English
+
+**Decided:** `plugin.json` carries `"version": "0.1.0"`, bumped in the same
+commit as any change a user would notice; the 2026-09-09 decision to omit
+it is superseded, and `claude plugin validate .` now passes with no
+warning. A `LICENSE` file (MIT, as the manifest already declared) is at the
+root. The README is written in English, for use, and points at `docs/` for
+everything else.
+
+**Why:** publishing on GitHub is the moment the "when a real semver becomes
+appropriate" clause of the old decision was waiting for: people other than
+the author will install it and read a changelog. The README follows the
+docs' language because a public plugin's first reader is more likely to
+read English than Portuguese; the Portuguese presentation lives in git
+history.

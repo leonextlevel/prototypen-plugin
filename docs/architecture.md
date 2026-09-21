@@ -16,42 +16,53 @@ sentences.
 ## The pieces
 
 ```
-skills/discover/SKILL.md         optional interactive intake — the only step that asks
+skills/discover/SKILL.md         optional interactive intake — asks, writes the spec
+skills/brand/SKILL.md            optional interactive brand exploration — asks, writes the brand
 skills/prototype/SKILL.md        the process — what happens, in what order, and when to stop
   └── references/*.md            the detail — loaded per phase, not up front
+skills/finalize/SKILL.md         after the last round — consolidates design/, writes its README
+skills/roadmap/SKILL.md          after finalize — the business roadmap under docs/
 agents/*.md                      five executors, each in its own context
-templates/*.md                   the shape of every artifact the pipeline writes
+hooks/                           two guards that make the two most dangerous rules mechanical
+templates/*.md                   the shape of every artifact the skills write
 ```
 
-### Two skills, split on whether asking is allowed
+### Five skills, split on two seams
 
-`discover` and `prototype` are separated along a real seam: **whether a question
-is worth its cost.**
+The first seam is **whether a question is worth its cost.** In `discover` and
+`brand`, nothing has been generated yet, or only candidates have; a question
+costs one exchange and can redirect an entire run, so asking is the
+highest-leverage thing available. In `prototype`, generation is underway and
+the target is a long unattended run; a question costs the run its autonomy,
+so the rule inverts to decide-and-record. Putting both behaviors in one skill
+would mean one body carrying two contradictory instructions about questions.
 
-In `discover`, nothing has been generated yet. A question costs one exchange and
-can redirect an entire run, so asking is the highest-leverage thing available.
-In `prototype`, generation is underway and the target is a long unattended run;
-a question costs the run its autonomy, so the rule inverts to decide-and-record.
+The second seam is **what the skill consumes and produces.** `prototype`
+consumes a spec and produces a canvas plus its documents. `finalize` consumes
+that output after the last round and produces a consolidated folder; it makes
+one decision the pipeline cannot, which is that the run is over and the
+recoverability scaffolding (dated audits, a run log, amendments appended
+rather than applied) can go. `roadmap` consumes the finalized folder and
+produces a document for a different audience, the people deciding what to
+build, in a different place, `docs/`. Neither is a phase: a phase runs inside
+one round, and both of these run once across all rounds.
 
-Putting both behaviors in one skill would mean a single body carrying two
-contradictory instructions about questions, with the model choosing which to
-follow. Splitting them makes each one unambiguous, and makes the interactive part
-**optional** — `prototype` writes its own spec when `discover` has not run, so
-the pipeline keeps its unattended property either way. `discover` is not a gate;
-it is an alternative source for one artifact.
-
-They are skills rather than `commands/` because plugin skills are already
-invocable as `/prototypen:discover` and `/prototypen:prototype`, so the command
-ergonomics come free without the legacy format. See `decisions.md`.
+Every interactive skill is **optional**. `prototype` writes its own spec when
+`discover` has not run and its own brand when `brand` has not, so the
+unattended property holds either way. They are skills rather than
+`commands/` because plugin skills are already invocable as
+`/prototypen:<name>`. See `decisions.md`.
 
 ### The prototype skill
 
 `skills/prototype/SKILL.md` is the orchestrator. It holds mode detection, the
 phase sequence, the delegation map, the commit rule, the attempt limit, and the
-language rule — and nothing else. It is deliberately kept under 500 lines,
-because a skill body is loaded whenever the skill triggers, and a body that
-grows past skimming length stops being read carefully and starts being read
-partially.
+language and voice rules — and nothing else. It is deliberately kept under
+300 lines, because a skill body is loaded whenever the skill triggers, and a
+body that grows past skimming length stops being read carefully and starts
+being read partially. What an agent needs to know lives in that agent's file
+and the references it reads; the skill body says what to put in the prompt,
+not how to draw.
 
 **It decides:** whether this is a bootstrap or an incremental run, whether the
 brand phase applies, which agent runs when, when to commit, and when to stop
@@ -59,23 +70,44 @@ trying.
 
 ### The references
 
-Six files under `skills/prototype/references/`, each loaded only by the phase
-that needs it. This is what keeps the skill body short without losing detail:
-`design-direction.md` is 100+ lines of specification that matters intensely for
-one phase and not at all for the other nine.
+Fourteen files under `skills/prototype/references/`, each loaded only by the
+phase that needs it, and shared by the other four skills. This is what keeps the skill body short without losing
+detail: `design-direction.md` is 200 lines of specification that matters
+intensely for one phase and not at all for the other nine.
 
 | File | Decides |
 |---|---|
+| `writing.md` | the voice of everything the plugin writes, documents and canvas copy alike |
 | `brand.md` | when the brand phase runs, what a brand must define, the logo variants |
-| `design-direction.md` | the divergence axes, what a direction must declare, how to choose |
+| `design-direction.md` | the divergence axes, the twelve things a direction declares, the token inventory it must fill, how to choose |
 | `anti-generic.md` | what is banned, and the boundary between visual and interaction |
 | `screen-craft.md` | the craft baseline — navigation, targets, hierarchy, secondary screens, content, and the per-screen self-review |
 | `layout.md` | arrangement — composition intent per archetype, space, spacing, alignment, distribution, and the numeric method |
 | `change-protocol.md` | who may raise a change, who decides, the three kinds, propagation, the log |
 | `component-catalog.md` | the repertoire by job — which component for which behavior, the screen-vs-overlay decision, the destructive-action rule, the forgotten actions |
-| `canvas-structure.md` | how the Pencil document is organized and audited |
-| `audit-rubric.md` | every pass/fail criterion, at four levels |
+| `landing-page.md` | the study a landing page is built from: visitor, one action, objections, proof, section order |
+| `canvas-structure.md` | how the Pencil document is organized: regions, groups, rows, versions side by side; and the sweep |
+| `audit-rubric.md` | every pass/fail criterion, at five levels |
+| `handoff.md` | what phase 10 exports so the prototype exists outside pen.dev — PNGs, HTML, `tokens.json`, `tokens.css` |
+| `run-protocol.md` | the branch, the commits, `design/run.md`, resuming, rollback |
 | `pencil-mcp.md` | the verified Pencil API and its failure modes |
+
+### The hooks
+
+Two `PreToolUse` guards in `hooks/`. They exist because the two rules that
+matter most were, until now, only text: *every Pencil write targets
+`design/prototype.pen`* and *nothing reads a `.pen` outside the MCP*. The first
+guards against a verified property of the tool — `execute` on a path that does
+not exist silently writes into whatever canvas is active — and the second
+against flooding a context with a document that is only meaningful through
+`Get`. Both were stated in five files each and depended on the model reading
+them; a hook does not. The path guard cannot see the *active* editor, so the
+`get_app_state` check remains in the skill — the hook covers the half it can
+see, and the instruction covers the other half.
+
+The rule for adding a hook is the same as for adding an agent, inverted: a hook
+is justified when a rule is **mechanically checkable from the tool call alone**
+and its violation is expensive. Judgment does not go in a hook.
 
 ### Why there are two opposite reference files
 
@@ -98,7 +130,7 @@ that is different and worse.
 rule in it has a matching criterion in `audit-rubric.md` (3.12–3.16, 4.10), and
 the designer reads it before drawing rather than meeting it for the first time in
 a finding. A standard handed over up front is far cheaper than the same standard
-discovered through three fix cycles.
+discovered through two fix cycles.
 
 ### Why a fifth agent, when the rule says "rubric line, not subagent"
 
@@ -167,9 +199,9 @@ Five subagents, each in an isolated context with a scoped toolset.
 |---|---|---|---|
 | `researcher` | sonnet | what is true about the domain and what territory is taken | have aesthetic opinions |
 | `brand-designer` | opus, high effort | name, positioning, tone, archetype, palette, logo | design screens |
-| `designer` | sonnet | how to realize a decided direction on the canvas | write files, invent tokens |
+| `designer` | sonnet, medium effort | how to realize a decided direction on the canvas; which component a screen needs that the system lacks | write files, invent tokens |
 | `layout-reviewer` | sonnet | whether the arrangement does what it claims — alignment, distribution, space — by geometry | judge design; touch color, type, copy, structure |
-| `auditor` | opus, high effort | PASS or FAIL, against the rubric, with every FAIL classified | fix anything |
+| `auditor` | opus for the visual pass; sonnet (override) for the structural pass | PASS or FAIL, against the rubric, with every FAIL classified | fix anything |
 
 Two of these constraints are load-bearing rather than tidy:
 
@@ -184,6 +216,16 @@ because it is the only signal that the direction file is incomplete.
 **The auditor never fixes anything.** An agent that can fix what it finds
 gravitates toward finding what it can easily fix. Separating the verdict from
 the repair keeps the verdict honest.
+
+### The voice
+
+`references/writing.md` is read by every skill and every writing agent. It
+exists because generated prose has tells (the em dash as a connector, the
+staccato of short sentences, the "not X but Y" reflex, inflated vocabulary)
+and readers notice them before they notice the content. The rule applies to
+every document and to the copy on the canvas; the plugin's own files are
+explicitly not a style sample, since they are written for a model to follow
+and lean on the same devices.
 
 ### The templates
 
@@ -211,12 +253,16 @@ A fresh context has none of that. It has the artifact, the rubric, and the
 constraint files. It never heard the argument for why the spacing is 14px, so
 14px is either on the scale or it is not.
 
-The same logic sets the model split. Generation is largely execution once the
-direction is decided — `designer` runs on sonnet. Judgment is where the run
-actually succeeds or fails, so `auditor` runs on opus at high effort. The
-expensive model is spent on deciding whether the work is good, not on producing
-more of it. `brand-designer` gets the same treatment for the same reason: naming
-and positioning are irreversible decisions that everything downstream inherits.
+The same logic sets the model split: generation is execution, so `designer`
+runs on sonnet and the expensive model is spent on judgment. The designer was
+moved to opus on 2026-09-11 on the hypothesis that taste lives in execution
+too, and moved back on 2026-09-20 when the first real project showed the
+cost of that hypothesis (the designer makes the most tool calls, runs once
+per flow in parallel and again on every fix) and no evidence for it in the
+audit's findings (`decisions.md`, both dates). The auditor's structural
+levels, which are mechanical, run on sonnet too; only its visual pass, and
+`brand-designer`, stay on opus, for the original reason: judgment, and
+irreversible naming, are where a run succeeds or fails.
 
 ## Why constraint is declared before generation
 
@@ -269,7 +315,7 @@ decision at a time after a run that never stopped to ask.
 The auditor's failure classification is what feeds it: `execution` goes back to
 the designer, `direction` and `spec` go to the orchestrator. The classification
 exists because a direction failure sent to the designer as an execution failure
-burns three fix cycles on a constraint that cannot be satisfied.
+burns two fix cycles on a constraint that cannot be satisfied.
 
 ## What is deliberately absent
 
@@ -279,3 +325,5 @@ burns three fix cycles on a constraint that cannot be satisfied.
 - **No `CLAUDE.md` at the plugin root.** It would not be loaded as project
   context anyway. Instructions that need to reach the model go in the skill.
 - **No `.mcp.json`.** See `decisions.md`.
+- **No hook that judges.** The two hooks check paths. A hook that tried to
+  check design quality would be the auditor with no context.
