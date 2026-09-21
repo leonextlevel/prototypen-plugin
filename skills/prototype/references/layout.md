@@ -54,6 +54,56 @@ Within it, the intent per screen follows the screen's archetype:
   text; a left-ranged block has left text. Never a centered paragraph — if the
   copy is longer than two lines, the block's intent was wrong for it.
 
+### 1b. Both axes, and the left-edge reflex
+
+A generated screen has a bias: everything ranged left and top, because
+`alignItems: "start"` and `justifyContent: "start"` are the defaults and
+nothing forces a decision. The result reads as unresolved even when every
+left edge agrees. Alignment is a decision on **two axes for every
+container**, and the intent table above names the horizontal one; this is
+the vertical one, and the cases where left is the wrong answer.
+
+**Cross-axis (vertical, inside a horizontal row):**
+
+| Row holds | Cross-axis alignment |
+|---|---|
+| An icon or avatar next to one line of text | `center`; the icon sits on the text's vertical center |
+| An icon next to two or more lines of text | `start`, with the icon's top optically at the first line's cap height (a small top padding on the icon's wrapper), never floating at the block's center |
+| A label and a control (text field, toggle, select) | `center` |
+| An input and a button beside it | `center`, and the button's height equals the input's |
+| A page title and its actions | `center` (single-line title) or `end` (title with a subtitle: the actions sit on the title's baseline) |
+| Two columns of content (text beside an image, form beside a summary) | `start`, both columns beginning at the same `y`; `center` only when the shorter column is a single block meant to sit mid-height |
+| Cards in a grid row | equal heights, so the question does not arise |
+| A table row | `center` for every cell, single-line; multi-line cells `start` for all cells in that row |
+
+**Main-axis (vertical, inside a vertical layout) and the block cases:**
+
+| Screen or region | Vertical composition |
+|---|---|
+| Splash, sign-in, empty state, success, error page, 404 | the block is **centered in its region on both axes**. The screen is `fit_content`, so the region that holds the block gets an explicit height (the viewport height minus the chrome, from the direction) and `justifyContent: "center"`; a centered block that hugs the top is the most common partial |
+| A modal or sheet | the dialog centered in the viewport (sheet at the bottom); inside it, content ranged to the dialog's own left inset, the footer's actions **right-aligned** (or full-width stacked on mobile) |
+| A button, chip, badge, tab, cell, app bar | its content centered on the cross axis, and horizontally centered for buttons, chips and tabs |
+| Numeric columns, prices, totals, the trailing value in a list row | **right-aligned**, headers included |
+| A landing hero, a marketing section | whatever the direction commits to, applied to the whole section |
+
+**The left-edge reflex test.** If every container on a screen has the
+default alignment on both axes, one of these is true: the screen is a
+plain list or form and it is fine, or nobody decided. For any other
+archetype it is a finding. Check it in one pass:
+
+```js
+Get(screenId, (n, c) => n.type === "frame" && (n.layout || "horizontal") !== "none" && (n.children || []).length > 1 &&
+  Print(n.name, "|", n.layout || "horizontal", "| align", n.alignItems || "start", "| justify", n.justifyContent || "start"))
+```
+
+Every horizontal row with children of different heights and `align start`
+needs a reason; every vertical region holding a centered archetype with
+`justify start` needs one too. Then the numeric check: for each horizontal
+container, `bounds.y + bounds.height / 2` of each child against the
+container's `height / 2`; a row that intends `center` and misses by more
+than 1px is a FAIL, and a row of icon + single-line text with the icon's
+center above or below the text's center is the defect a viewer feels first.
+
 ---
 
 ## 2. Space: used, not wasted
@@ -217,6 +267,10 @@ container's depth. What to compute and what a failure is:
 | Widths in a group | `bounds.width` of siblings | any differ where the group intends equality |
 | Dead space | frame height vs last child's bottom edge; largest gap vs scale max | trailing space beyond the inset; a gap larger than the scale's largest step |
 | Row heights | `bounds.height` of cards in a row | unequal |
+| Cross-axis centers | `bounds.y + bounds.height/2` of each child in a horizontal row vs the row's `height/2` | a row that intends `center` (icon + one line, label + control, input + button, title + actions) off by more than 1px; an icon next to one line of text at a different center |
+| Block centering | the block's `bounds.y + height/2` vs its region's `height/2`; its `x + width/2` vs `width/2` | a centered archetype (splash, sign-in, empty, success, error, 404) whose block hugs the top or an edge |
+| Default alignment everywhere | every layout frame `align start` and `justify start` | on any archetype except a plain list or form |
+| Trailing values | `bounds.x + width` of numeric cells and trailing values | not sharing one right edge; header not right-aligned with them |
 
 **Near-miss is worse than wrong.** A 40px offset reads as intentional; a 3px
 offset reads as sloppy. Treat 1–4px as the highest-priority finding, not the
@@ -236,6 +290,13 @@ element is placed relative to its neighbor, so the intent is never checked
 against the whole. The symptom list, so it is recognized on sight:
 
 - Centered heading, left-ranged everything else.
+- An empty state or a sign-in whose block starts at the top inset because
+  the region has no height and no `justifyContent`.
+- An icon whose center sits 3px above the text beside it (`alignItems`
+  left at `start`).
+- Actions in a header at the top edge while the title is vertically
+  centered.
+- Amounts in a table ranged left.
 - Centered block whose button sits at the container's left inset.
 - Form fields of three different widths.
 - Rows whose right edges vary because some have a trailing icon and some do not
