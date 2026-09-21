@@ -1399,18 +1399,20 @@ report, not in the question.
 
 ---
 
-## 2026-09-21 — First public release: `version` 0.1.0, LICENSE, README in English
+## 2026-09-21 — First public release: `version` 0.1.0, LICENSE, README for use
 
 **Decided:** `plugin.json` carries `"version": "0.1.0"`, bumped in the same
 commit as any change a user would notice; the 2026-09-09 decision to omit
 it is superseded, and `claude plugin validate .` now passes with no
 warning. A `LICENSE` file (MIT, as the manifest already declared) is at the
-root. The README is written in English, for use, and points at `docs/` for
-everything else.
+root. The README is rewritten for use only (requirements, install, the
+skills, the two access modes, what a round draws, how an adjustment is
+verified, what you get) and points at `docs/` for everything else. It
+stays in Portuguese, the author's language and the deliberate exception to
+the English convention of `docs/`.
 
 **Why:** publishing on GitHub is the moment the "when a real semver becomes
 appropriate" clause of the old decision was waiting for: people other than
-the author will install it and read a changelog. The README follows the
-docs' language because a public plugin's first reader is more likely to
-read English than Portuguese; the Portuguese presentation lives in git
-history.
+the author will install it and read a changelog. The README keeps the
+language the author writes in; the docs stay English so that the plugin's
+own files, which a model reads, follow one convention.

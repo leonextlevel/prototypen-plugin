@@ -1,157 +1,164 @@
 # prototypen
 
-A [Claude Code](https://claude.com/claude-code) plugin that turns an idea
-with requirements into a navigable prototype on the
-[Pencil (pen.dev)](https://pen.dev) canvas, with a design system, a brand
-and the documents that hand off to implementation.
+Um plugin para o [Claude Code](https://claude.com/claude-code) que transforma
+uma ideia com requisitos num protótipo navegável no canvas do
+[Pencil (pen.dev)](https://pen.dev), com sistema de design, marca e os
+documentos que fazem o handoff para a implementação.
 
-It exists because AI-generated design has a recognizable face (Inter, blue
-`#3b82f6`, the soft-shadowed white card, the centered hero), and asking for
-creativity does not change it. The plugin declares constraints before it
-draws anything (research, brand, a written design direction chosen from
-three) and audits the result against those constraints in a separate
-context. The full reasoning is in [docs/architecture.md](docs/architecture.md).
+Ele existe porque design gerado por IA tem uma cara reconhecível (Inter,
+azul `#3b82f6`, card branco com sombra suave, hero centralizado), e pedir
+criatividade não muda isso. O plugin declara restrições antes de desenhar
+qualquer coisa (pesquisa, marca, uma direção de design escrita e escolhida
+entre três) e audita o resultado contra essas restrições num contexto
+separado. O raciocínio completo está em
+[docs/architecture.md](docs/architecture.md).
 
-## Requirements
+## Requisitos
 
 - [Claude Code](https://claude.com/claude-code).
-- The pen.dev CLI, installed and logged in:
-  `npm install -g @pen.dev/cli`, then `pen login`. It is how the plugin
-  saves the canvas, and how it runs when no editor is open. (`pencil` in
-  your PATH may be the desktop app; the CLI is `pen`.)
-- A git repository in the project you are designing for. The plugin commits
-  after every phase, only under `design/`, on a `design/<date>` branch when
-  you are on the default branch.
-- For watching the canvas live: pen.dev desktop or the VS Code extension,
-  with its `pencil` MCP server connected to Claude Code. Optional; see
-  "App mode or headless" below.
+- O CLI do pen.dev, instalado e logado: `npm install -g @pen.dev/cli`, depois
+  `pen login`. É por ele que o plugin salva o canvas, e é por ele que roda
+  quando nenhum editor está aberto. (O comando `pencil` no seu PATH pode
+  ser o app desktop; o CLI é `pen`.)
+- Um repositório git no projeto que vai receber o design. O plugin commita
+  ao fim de cada fase, só dentro de `design/`, numa branch `design/<data>`
+  quando você está na branch principal.
+- Para acompanhar o canvas ao vivo: o pen.dev desktop ou a extensão do VS
+  Code, com o servidor MCP `pencil` conectado ao Claude Code. Opcional; veja
+  "App aberto ou headless" abaixo.
 
-## Install
+## Instalação
 
 ```bash
 claude plugin marketplace add leonextlevel/prototypen-plugin
 claude plugin install prototypen@prototypen
 ```
 
-Or from a local clone: `claude --plugin-dir /path/to/prototypen-plugin`.
+Ou a partir de um clone local: `claude --plugin-dir /caminho/para/prototypen-plugin`.
 
-The pipeline makes hundreds of tool calls without stopping, so pre-approve
-them: run Claude Code in auto mode, or add the allowlist from
-[docs/usage.md](docs/usage.md#permissions-for-an-unattended-run) to the
-project's `.claude/settings.json`.
+O pipeline faz centenas de chamadas de ferramenta sem parar, então
+pré-aprove: rode o Claude Code em modo auto, ou adicione a allowlist de
+[docs/usage.md](docs/usage.md#permissions-for-an-unattended-run) ao
+`.claude/settings.json` do projeto.
 
-## Use
+## Uso
 
-Describe what you want built, in whatever language you work in:
+Descreva o que quer construir, no idioma em que você trabalha:
 
-> Design an app for a small logistics company to track shipments: a list of
-> active shipments with status, carrier, cost and ETA, a detail view per
-> shipment, and a weekly cost report. Three dispatchers use it all day on
-> desktop.
+> Projete um app para uma transportadora pequena acompanhar fretes: uma lista
+> dos fretes ativos com status, transportadora, custo e previsão, uma visão de
+> detalhe por frete e um relatório semanal de custo. Três operadores usam o
+> dia inteiro no desktop.
 
-That triggers `/prototypen:prototype`. It asks one question up front (which
-way to reach the canvas, which branch gets the commits, whether to explore
-the brand first), then runs to handoff without stopping: intake, research,
-brand, direction, design system, screens, layout review, audit with a fix
-loop, exports and the handoff spec. Everything it produces follows your
-language; file names and canvas layer names stay English.
+Isso aciona o `/prototypen:prototype`. Ele faz uma pergunta no início (por
+qual caminho acessar o canvas, qual branch recebe os commits, se explora a
+marca antes) e depois roda até o handoff sem parar: intake, pesquisa,
+marca, direção, sistema de design, telas, revisão de layout, auditoria com
+ciclo de correção, exports e a spec de handoff. Tudo que ele produz
+acompanha o seu idioma; nomes de arquivo e de camadas do canvas ficam em
+inglês.
 
-The five skills, in the order you would use them:
+As cinco skills, na ordem em que você as usaria:
 
-| Skill | What it does |
+| Skill | O que faz |
 |---|---|
-| `/prototypen:discover` | Optional. Asks the questions worth asking, in at most three rounds, and writes `design/product-spec.md`. Skip it and the pipeline writes the spec itself, recording every guess under Assumptions. |
-| `/prototypen:brand` | Optional. Puts three brand candidates side by side on the canvas (name, mark, palette, a specimen), refines the one you pick, writes `design/brand.md`. For when the identity matters and you want to see options. |
-| `/prototypen:prototype` | The pipeline. Also the entry point for later rounds: "add bulk actions to the shipment list" runs incrementally on the existing design. |
-| `/prototypen:finalize` | When the design is done: consolidates `design/` into a standard folder with a `README.md` entry point, folds amendments into the documents, refreshes the exports. |
-| `/prototypen:roadmap` | From a finalized design: a business roadmap under `docs/`, every screen placed in exactly one milestone with its states as acceptance criteria. |
+| `/prototypen:discover` | Opcional. Faz as perguntas que valem a pena, em no máximo três rodadas, e escreve `design/product-spec.md`. Se você pular, o pipeline escreve a spec sozinho e registra cada palpite em Assumptions. |
+| `/prototypen:brand` | Opcional. Põe três candidatos de marca lado a lado no canvas (nome, símbolo, paleta, um espécime), refina o que você escolher e escreve `design/brand.md`. Para quando a identidade importa e você quer ver opções. |
+| `/prototypen:prototype` | O pipeline. Também é a porta de entrada das rodadas seguintes: "adicione ações em lote na lista de fretes" roda de forma incremental sobre o design existente. |
+| `/prototypen:finalize` | Quando o design terminou: consolida `design/` numa pasta padrão com um `README.md` de entrada, dobra as emendas nos documentos e refaz os exports. |
+| `/prototypen:roadmap` | A partir de um design finalizado: um roadmap de negócio em `docs/`, com cada tela em exatamente um marco e os estados como critérios de aceite. |
 
-### App mode or headless
+### App aberto ou headless
 
-Every skill that draws asks this first, once, with a suggested default:
+Toda skill que desenha começa com essa pergunta, uma vez, com um padrão
+sugerido:
 
-- **Headless** (suggested for a full run): the plugin drives pen.dev's
-  engine through the CLI, with no editor open. It saves by itself and cannot
-  write into the wrong file. Keep `design/prototype.pen` closed in Pencil
-  while it runs; when it says the run is done, open the file.
-- **App mode** (suggested for incremental rounds, `brand` and `finalize`):
-  pen.dev is open with `design/prototype.pen` as the active editor and you
-  watch the canvas change. The plugin saves before every commit; you never
-  need Ctrl+S.
+- **Headless** (sugerido para a rodada completa): o plugin usa o motor do
+  pen.dev pelo CLI, sem editor aberto. Salva sozinho e não consegue escrever
+  no arquivo errado. Mantenha `design/prototype.pen` fechado no Pencil
+  enquanto roda; quando ele avisar que terminou, abra o arquivo.
+- **App aberto** (sugerido para rodadas incrementais, `brand` e `finalize`):
+  o pen.dev está aberto com `design/prototype.pen` como editor ativo e você
+  vê o canvas mudando. O plugin salva antes de cada commit; você nunca
+  precisa do Ctrl+S.
 
-The result is the same either way. The desktop app does not autosave an
-existing `.pen` and does not reload one changed on disk, which is why the
-two modes are kept apart and the headless runner refuses to write while the
-file is open in the app.
+O resultado é o mesmo nos dois. O app desktop não salva sozinho um `.pen`
+existente nem recarrega um arquivo alterado no disco, e é por isso que os
+dois modos são mantidos separados e o runner headless se recusa a escrever
+enquanto o arquivo estiver aberto no app.
 
-### How much it draws
+### Quanto ele desenha
 
-By default a round draws the **core path**: the core loop end to end, the
-secondary screens the application type requires (404, session expired,
-permissions, and so on) and the states only those screens have. The states
-every screen shares (loading, empty, error, long list, long text, first
-use, permission denied) are built once per screen archetype as exemplars in
-the design system, and every screen inherits them. What the jobs imply
-beyond that is listed under Backlog in the spec for the next round. Ask for
-`full` in discovery to draw the whole inventory at once.
+Por padrão uma rodada desenha o **caminho principal**: o core loop de ponta
+a ponta, as telas secundárias que o tipo de aplicação exige (404, sessão
+expirada, permissões e afins) e os estados que só aquelas telas têm. Os
+estados que toda tela compartilha (carregando, vazio, erro, lista longa,
+texto longo, primeiro uso, permissão negada) são construídos uma vez por
+arquétipo de tela, como exemplares no sistema de design, e toda tela os
+herda. O que os trabalhos implicam além disso fica listado em Backlog na
+spec, para a próxima rodada. Peça `full` no discover para desenhar o
+inventário inteiro de uma vez.
 
-### Adjusting an existing prototype
+### Ajustando um protótipo existente
 
-Any request after a finished run is applied under a verification protocol:
-the request becomes checks with numbers before the canvas is touched, the
-screen is snapshotted before and after so the diff shows what moved, and the
-report lists each check as PASS or FAIL. If the request conflicts with a
-rule the project already has (a color outside the palette, a delete without
-confirmation, a screen without the navigation), you are asked what you want
-before anything changes: amend the rule everywhere, make a named exception
-on that screen, or keep the rule and do the nearest thing inside it.
+Qualquer pedido depois de uma rodada concluída é aplicado sob um protocolo
+de verificação: o pedido vira checks com números antes de tocar no canvas,
+a tela recebe um snapshot antes e depois para o diff mostrar o que se
+moveu, e o relatório lista cada check como PASS ou FAIL. Se o pedido
+conflitar com uma regra que o projeto já tem (uma cor fora da paleta, um
+delete sem confirmação, uma tela sem a navegação), você é perguntado antes
+de qualquer mudança: emendar a regra em todo lugar, abrir uma exceção
+nomeada naquela tela, ou manter a regra e fazer o mais próximo dentro dela.
 
-## What you get
+## O que você recebe
 
 ```
 design/
-├── README.md            after finalize: the entry point
-├── product-spec.md      personas, jobs, targets, screen inventory, states, navigation map, backlog
-├── research.md          competitors, conventions, antipatterns, sources
-├── brand.md             name, positioning, tone, palette, logo rules
-├── brand/logo/*.svg     five logo variants
-├── design-direction.md  the chosen direction, the token inventory, the component list
-├── changes.md           every decision the run made instead of asking, and why
-├── audits/<date>.md     every criterion, PASS or FAIL
-├── design-spec.md       the handoff: tokens to code, components, screens, rules, routes
-├── tokens.json          every variable, W3C Design Tokens format, all themes
-├── tokens.css           the same as custom properties, per theme
-├── prototype.pen        the canvas
-└── screens/             one PNG per screen version and state, each flow as HTML (not versioned)
+├── README.md            depois do finalize: a porta de entrada
+├── product-spec.md      personas, jobs, alvos, inventário de telas, estados, mapa de navegação, backlog
+├── research.md          concorrentes, convenções, antipadrões, fontes
+├── brand.md             nome, posicionamento, tom, paleta, regras do logo
+├── brand/logo/*.svg     cinco variações do logo
+├── design-direction.md  a direção escolhida, o inventário de tokens, a lista de componentes
+├── changes.md           cada decisão que a rodada tomou em vez de perguntar, e o porquê
+├── audits/<data>.md     cada critério, PASS ou FAIL
+├── design-spec.md       o handoff: tokens para código, componentes, telas, regras, rotas
+├── tokens.json          todas as variáveis, formato W3C Design Tokens, todos os temas
+├── tokens.css           o mesmo como custom properties, por tema
+├── prototype.pen        o canvas
+└── screens/             um PNG por versão de tela e estado, cada fluxo em HTML (não versionado)
 ```
 
-The canvas has a `Design System` region (tokens, components, the state
-exemplars), a `Brand` region and one region per flow. Inside a flow, one
-column group per screen in navigation order; the group's first row holds
-the screen's versions side by side (desktop, mobile, a dark copy), and each
-specific state and overlay gets a row below.
+O canvas tem uma região `Design System` (tokens, componentes, os
+exemplares de estado), uma região `Brand` e uma região por fluxo. Dentro do
+fluxo, um grupo em coluna por tela, na ordem da navegação; a primeira linha
+do grupo traz as versões da tela lado a lado (desktop, mobile, a cópia em
+dark), e cada estado específico e overlay ganha uma linha abaixo.
 
-## Cost
+## Custo
 
-The expensive model is spent where judgment decides the outcome
-(direction, brand, the visual audit) and the cheaper one on execution (the
-designer, the structural audit, the layout review). Which agent runs on
-what, and where to change it, is one table in
-[docs/usage.md](docs/usage.md#which-model-does-what). A full first run on a
-real product is still long; start it and come back.
+O modelo caro é gasto onde o julgamento decide o resultado (direção,
+marca, a auditoria visual) e o mais barato na execução (o designer, a
+auditoria estrutural, a revisão de layout). Qual agente roda em qual
+modelo, e onde trocar, é uma tabela em
+[docs/usage.md](docs/usage.md#which-model-does-what). Uma primeira rodada
+completa num produto real ainda é longa; inicie e volte depois.
 
-## Documentation
+## Documentação
+
+A documentação em `docs/` é escrita em inglês, seguindo a convenção interna
+do plugin; este README é a exceção deliberada.
 
 | | |
 |---|---|
-| [docs/usage.md](docs/usage.md) | running it, permissions, reading an audit, resuming, troubleshooting |
-| [docs/pipeline.md](docs/pipeline.md) | the phases in detail, artifacts, commit points |
-| [docs/architecture.md](docs/architecture.md) | the pieces, what each decides, why the audit is isolated |
-| [docs/development.md](docs/development.md) | installing from source, hooks, scripts, validation, repository layout |
-| [docs/contributing.md](docs/contributing.md) | how to change the plugin without making it worse |
-| [docs/decisions.md](docs/decisions.md) | every decision taken while building it, with the reason |
-| [evals/README.md](evals/README.md) | the reference cases to run after any significant change |
+| [docs/usage.md](docs/usage.md) | como rodar, permissões, ler uma auditoria, retomar, troubleshooting |
+| [docs/pipeline.md](docs/pipeline.md) | as fases em detalhe, artefatos, pontos de commit |
+| [docs/architecture.md](docs/architecture.md) | as peças, o que cada uma decide, por que a auditoria é isolada |
+| [docs/development.md](docs/development.md) | instalação a partir do código, hooks, scripts, validação, layout do repositório |
+| [docs/contributing.md](docs/contributing.md) | como evoluir o plugin sem piorá-lo |
+| [docs/decisions.md](docs/decisions.md) | cada decisão tomada na construção, com o motivo |
+| [evals/README.md](evals/README.md) | os casos de referência para rodar após qualquer mudança grande |
 
-## License
+## Licença
 
 [MIT](LICENSE)
