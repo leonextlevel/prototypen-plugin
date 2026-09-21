@@ -1,7 +1,8 @@
 # Pencil (pen.dev) MCP — operating reference
 
 Everything below was verified against the live `pencil` MCP server and its own
-`pen-dev` skill on 2026-09-09 (VS Code extension `highagency.pencildev-0.6.71`).
+`pen-dev` skill on 2026-09-09 (VS Code extension `highagency.pencildev-0.6.71`),
+and against the desktop app and `@pen.dev/cli` 0.3.8 on 2026-09-20.
 Anything marked **TO VERIFY** was not confirmed and must not be relied on.
 
 **Never invent a tool or function signature.** If you need something that is not
@@ -10,12 +11,22 @@ guessing.
 
 ## Session preconditions
 
-- The pen.dev app must be running **with a `.pen` file open in the editor**.
-  Every tool — including `get_app_state` and `read_skill` — fails with
-  `Failed to access file ""` when nothing is open. This is the single most
-  common cause of a dead pipeline run; check it first.
-- `.pen` files are encrypted. **Never use Read, Grep, or any shell tool on a
-  `.pen` file.** The MCP tools are the only way in.
+- **Two access modes exist**; `canvas-access.md` decides which one a run
+  uses and how each saves. This file describes the `execute` API, which is
+  the same in both: through the MCP tools in app mode, through
+  `scripts/pen-run.sh` (the pen.dev CLI, headless) otherwise. The rules
+  below about the *active editor* apply to app mode only.
+- In app mode the pen.dev app must be running **with a `.pen` file open in
+  the editor**. Every tool — including `get_app_state` and `read_skill` —
+  fails with `Failed to access file ""` when nothing is open. This is the
+  single most common cause of a dead pipeline run; check it first.
+- **Nothing in this API saves.** App mode saves with `scripts/pen-save.sh`
+  before every commit; headless saves at the end of every `pen-run.sh` run.
+- **Never use Read, Grep, or any shell tool on a `.pen` file.** The MCP tools
+  are the only way in. (The MCP server describes the format as opaque; on disk
+  an empty document is four lines of JSON with a `fileToken` UUID, and a full
+  one is hundreds of kilobytes that would flood the context. Either way, the
+  rule holds, and `hooks/guard-pen-read.sh` enforces it.)
 - **The canvas for a project is always `design/prototype.pen`.** Fixed name and
   place, so every round and every agent finds it without being told.
 - **`execute` cannot create a file, and a `filePath` that does not exist is not
@@ -25,7 +36,12 @@ guessing.
   the editor. No warning, no failure. The only defense is to read the active
   path from `get_app_state` and compare it to the target **before every write
   session** — at the start of each `designer` task, and again at the first
-  canvas write of the pipeline.
+  canvas write of the pipeline. **`hooks/guard-canvas-path.sh` enforces the
+  path half mechanically**: an `execute` whose `filePath` does not resolve to
+  `<cwd>/design/prototype.pen`, or whose target does not exist on disk, is
+  denied before it runs. The `get_app_state` half — that the file is the
+  *active* editor — still has to be checked by hand; the hook cannot see the
+  editor.
 - Opening a file from the shell with `code <path>` is **not reliable** for this:
   it can land in a different VS Code window than the one the MCP is attached to,
   and it triggers a trust prompt the user must click through. Whether the file
@@ -42,7 +58,7 @@ guessing.
 | `get_app_state` | Active canvas file, current selection, top-level nodes, existing reusable components, integrated-browser state. Call it first in a session, and **again before every write session** to confirm the active file is `design/prototype.pen`. |
 | `read_skill` | `read_skill()` returns the pen-dev SKILL.md; `read_skill({path})` reads a referenced file (`"pen-schema.md"`, `"execute.md"`, `"guide/web-app.md"`, `"guide/design-system.md"`, `"guide/mobile-app.md"`, `"guide/landing-page.md"`, `"guide/table.md"`, `"guide/components.md"`, `"guide/code.md"`, `"guide/tailwind.md"`, `"scripts-and-shaders.md"`, `"slides.md"`). **Read `pen-schema.md` and `execute.md` before the first `execute` call of a session.** |
 | `get_style` | Ready-made visual style archetypes. `get_style()` lists them; `get_style({name})` loads one or returns its required params. **This plugin does not use style archetypes** — they are for when the user has no direction, and this pipeline always produces its own. See `anti-generic.md`. |
-| `execute` | Runs a JavaScript snippet against the document. This is where all reading and writing happens. |
+| `execute` | Runs a JavaScript snippet against the document. This is where all reading and writing happens. Guarded by `hooks/guard-canvas-path.sh`: `filePath` must resolve to `<cwd>/design/prototype.pen` and exist. |
 
 ### `execute` inputs
 
@@ -137,13 +153,25 @@ SetVariables({
 ```
 
 - Every value **must** be `{type, value}`. A bare `"#A3B59A"` or `16` fails.
-- Types: `"color"`, `"number"`, `"string"`.
+- Types: `"color"`, `"number"`, `"string"`, `"boolean"` (the schema lists all
+  four; `execute.md` mentions only the first three).
+- **Names follow the token inventory** in `design-direction.md` Step 3b —
+  `color-surface`, `space-2`, `font-body` — verbatim. The exported
+  `tokens.css` and every incremental round look them up by these names.
 - Variable names must **not** start with `$`. The `$` prefix is only for
   *referencing*: `fill: "$accent"`, `gap: "$spacing-unit"`.
 - `replace` defaults to `false` (merge). Read with `Print(GetVariables())`
   before writing so you never clobber an existing token — this is the
   incremental-mode guard.
 - Theme axes are registered automatically from `{value, theme}` arrays.
+- **Every node accepts `theme`** (`Entity.theme`, verified in `pen-schema.md`
+  2026-09-19): a frame with `theme: {mode: "dark"}` resolves the variables
+  in its subtree for that theme. That is how a screen's theme copy is made:
+  mark the source `reusable: true`, then `Copy(sourceId, rowId, {name: "… @
+  Dark", theme: {mode: "dark"}})`, which yields a linked `ref` that follows
+  the source. **TO VERIFY on the first two-theme run:** that the copy renders
+  in the other theme in the editor and in `Export`; if not, a plain `Copy`
+  with the same override is the fallback.
 
 ### Screenshots
 
@@ -169,31 +197,97 @@ its legitimate use; almost nothing else is.
 - Poll cheaply and rarely: `Print(Get(logoFrameId, {depth: 0}).placeholder)`.
   Never poll with screenshots, never back-to-back. Do other work in between.
 - If the flag clears and the frame is still empty, the generation failed — that
-  is the only case where re-running `Generate` on the same node is correct.
-- Never hand-draw a logo out of paths. Never generate one SVG per variant —
-  generate once, then build the variants from it (`canvas-structure.md`).
+  is the only case where re-running `Generate` on the same node is correct,
+  and it is done **once**. A second empty result, or an error in the
+  response naming credits, quota, billing or a plan limit, means the
+  account cannot generate right now; stop calling `Generate` for the rest of
+  the run and switch to the manual path below.
+- Never generate one SVG per variant — generate once, then build the
+  variants from it (`canvas-structure.md`). Hand-drawing is reserved for the
+  fallback.
 - Icons → `icon` nodes (`lucide`, `feather`, `Material Symbols`, `phosphor`).
   Photography → `Generate` with `"stock"` or `"ai"` as a **fill**. There is no
   `image` node type.
 
-### Exporting the logo files
+#### When `Generate` is unavailable: the manual path
+
+`Generate` runs on the pen.dev account's credits, and a run that hits the
+limit gets empty frames or an error, not a warning in advance. The rule
+against hand-built marks yields to this, in a controlled way:
+
+- **Say it once.** Record in `design/run.md` and in the report that
+  generation was unavailable (quote the error) and that the artwork below
+  was built manually; the user decides whether to regenerate later. Never
+  retry in a loop, never leave an empty frame.
+- **Marks: geometric, from primitives.** Build the mark from `ellipse`
+  (with `innerRadius`, `startAngle`, `sweepAngle` for rings and arcs),
+  `rectangle`, `polygon` and a small number of `path` nodes with
+  hand-written `geometry` and an explicit `viewBox`. Constrain the concept
+  to what primitives do well: a monogram from the brand type, a ring, a
+  bar, a cut circle, two overlapping shapes. Do not attempt an
+  illustration, a mascot or a flowing figure by hand; that is the case the
+  ban exists for, and the brand document should then say the mark is a
+  placeholder concept to be regenerated.
+- **Write the SVG source directly.** The five variants in
+  `design/brand/logo/*.svg` are written as SVG files by hand from the same
+  primitives (`<circle>`, `<rect>`, `<path>`, `<text>` converted to paths
+  only when a font is guaranteed; otherwise the wordmark stays a text node
+  on the canvas and the SVG carries the mark alone, and the document says
+  so).
+- **Photography and illustration fills** (`"ai"`, `"stock"`): use the
+  system's placeholder frame (the `Frame / … — Placeholder` variants in the
+  Design System: a `$color-surface-2` fill, the aspect ratio, a caption
+  naming what the image would be) and list each one under open findings in
+  the handoff. A frame with no fill, or a literal gray, is still a defect.
+- `"remove-background"`, `"replace-background"` and `"vectorize-image"`
+  are skipped the same way, with the source image kept as is.
+
+### Exporting — the delivery mechanism
 
 `Export(nodeIds, format, outputPath, options?)` writes to disk — image formats
-take a directory and write `<nodeId>.<ext>`; HTML formats take a file path.
-This is the delivery mechanism for `design/brand/logo/`, not a verification
-tool. Verify with `TakeScreenshot`.
+take a directory and write `<nodeId>.<ext>` at 2× by default; HTML formats
+(`html-css`, `html-tailwind`) take a file path and put every node into one
+file with assets referenced relatively. It is **not** a verification tool
+(verify with `TakeScreenshot`); it is how phase 10 delivers `design/screens/`
+— one PNG per screen and variant, one HTML per flow — and how the brand phase
+delivers PNG previews of the logo. Procedure and naming in `handoff.md`.
 
-**TO VERIFY:** `Export` has no documented `"svg"` format — only `png`, `jpeg`,
-`webp`, `pdf`, `html-tailwind`, `html-css`. Until this is confirmed, the brand
-phase writes the logo SVG **source** to `design/brand/logo/*.svg` by hand from
-the generated path geometry (`Get` with `includePathGeometry: true`), and uses
-`Export` only for the PNG previews. Confirm before relying on either path.
+Pass an **absolute** `outputPath`. What a relative path resolves against (the
+project, the `.pen` file's directory, the server's cwd) is not verified.
 
-**TO VERIFY:** whether a 0-byte `design/prototype.pen` opens correctly as a
-Pencil canvas (so the skill could `touch` it and only ask the user to open it),
-and whether `code -r` on a path inside the attached workspace opens in the right
-window without a trust prompt. The out-of-workspace test did neither. Until
-confirmed, the user creates and opens the file.
+`Export` has no `"svg"` format. The brand phase writes the logo SVG **source**
+to `design/brand/logo/*.svg` from the generated path geometry (`Get` with
+`includePathGeometry: true` returns `geometry` and `viewBox` per path, which
+map directly onto `<path d>` and the SVG `viewBox`), and uses `Export` only
+for PNG previews.
+
+**TO VERIFY:** whether `html-css` export honors `TextStyle.href` as a real
+`<a href>`. If it does, the navigation map becomes clickable in the exported
+HTML — see `handoff.md`.
+
+### The empty canvas file
+
+An empty document, as the editor itself writes it, is:
+
+```json
+{
+  "version": "2.17",
+  "children": [],
+  "fileToken": "<a fresh UUID v4>"
+}
+```
+
+Step 0 of the prototype skill writes exactly this when `design/prototype.pen`
+does not exist (with `uuidgen` or `python3 -c 'import uuid;print(uuid.uuid4())'`),
+so the user is asked only to **open** the file, not to create it. Opening is
+still the user's: `code -r <path>` from the shell can land in a different VS
+Code window than the one the MCP is attached to and triggers a trust prompt,
+and whether the file became the active canvas cannot be observed from here.
+Ask, then verify with `get_app_state`.
+
+**TO VERIFY:** that the file written this way opens as a canvas on the first
+try. If a user reports it does not, fall back to asking them to create it
+from the editor, and record the outcome here.
 
 ## Layout facts that cause most failures
 
@@ -222,9 +316,11 @@ confirmed, the user creates and opens the file.
   content gets silently cut to fit a tab bar. See `canvas-structure.md`.
 - Any new, copied, or modified root frame carries `placeholder: true` for the
   duration of work on it, cleared as soon as that frame is done.
-- Use `FindEmptySpace` to place root-level frames; never pick random
-  coordinates, never overlap root objects. Chain sequential screens with its
-  `nodeId` anchor.
+- Use `FindEmptySpace` to place root-level regions; never pick random
+  coordinates, never overlap root objects. Inside a flow region nothing is
+  placed by coordinate: the region, its column groups and their rows are
+  layout frames (`canvas-structure.md` §4), so screens land where the layout
+  puts them and versions of one screen stay side by side and top-aligned.
 
 ## Multiplayer
 
